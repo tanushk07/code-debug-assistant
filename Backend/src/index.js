@@ -8,7 +8,7 @@ const authRouter = require('./routes/auth');
 const meRouter = require('./routes/me');
 const sessionsRouter = require('./routes/sessions');
 const uploadRouter = require('./routes/upload');
-const providersRouter = require('./routes/providers');
+const configRouter = require('./routes/config');
 const errorMiddleware = require('./middleware/error');
 
 const app = express();
@@ -31,7 +31,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/me', meRouter);
 app.use('/api/sessions', sessionsRouter);
 app.use('/api/upload', uploadRouter);
-app.use('/api/providers', providersRouter);
+app.use('/api/config', configRouter);
 
 app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }));
 

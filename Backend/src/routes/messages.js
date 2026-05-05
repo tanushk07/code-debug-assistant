@@ -35,6 +35,17 @@ router.post('/', async (req, res, next) => {
       [sessionId, user_message],
     );
 
+    // 2b. Auto-title on first turn — runs BEFORE agents so the title sticks
+    //     even if the LLM call later fails (quota, overload, etc.).
+    if (priorMessages.length === 0) {
+      const newTitle =
+        user_message.slice(0, 60).replace(/\s+/g, ' ').trim() || 'Untitled session';
+      await query(
+        'UPDATE debug_sessions SET title = $1 WHERE id = $2 AND title = $3',
+        [newTitle, sessionId, 'Untitled session'],
+      );
+    }
+
     // 3. Open SSE stream
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
@@ -66,13 +77,6 @@ router.post('/', async (req, res, next) => {
       [sessionId, assistantText, model_id, classification],
     );
     await query('UPDATE debug_sessions SET updated_at = NOW() WHERE id = $1', [sessionId]);
-
-    // 6. Auto-title sessions on first turn (cheap UX win)
-    if (priorMessages.length === 0) {
-      const newTitle = user_message.slice(0, 60).replace(/\s+/g, ' ').trim() || 'Untitled session';
-      await query('UPDATE debug_sessions SET title = $1 WHERE id = $2 AND title = $3',
-        [newTitle, sessionId, 'Untitled session']);
-    }
 
     send('done', { ok: true });
     res.end();

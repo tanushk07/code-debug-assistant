@@ -1,28 +1,24 @@
 import { useEffect, useRef, useState } from 'react'
 import MessageBubble from './MessageBubble.jsx'
 import { useStreamingChat } from '../hooks/useStreamingChat.js'
+import { getConfig } from '../lib/config.js'
 
 export default function ChatPanel({ sessionId, messages, onMessageComplete }) {
   const { streaming, draft, classification, error, send, abort } =
     useStreamingChat(sessionId, onMessageComplete)
-  const [input, setInput]       = useState('')
+  const [input, setInput]         = useState('')
   const [providers, setProviders] = useState([])   // [{ id, label }]
-  const [model, setModel]       = useState(() => localStorage.getItem('cda.model') || '')
+  const [model, setModel]         = useState(() => localStorage.getItem('cda.model') || '')
   const bottomRef = useRef()
   const taRef     = useRef()
 
-  // Discover which LLM providers the backend has keys for. Populates the
-  // dropdown dynamically — no hardcoded list, no orphan options.
+  // Discover which LLM providers the backend has keys for.
   useEffect(() => {
-    fetch('/api/providers')
-      .then((r) => r.json())
-      .then((list) => {
-        setProviders(list)
-        // If the previously stored model isn't in the list anymore, snap to
-        // the first configured one.
-        setModel((prev) => (list.find((p) => p.id === prev) ? prev : list[0]?.id || ''))
-      })
-      .catch(() => setProviders([]))
+    getConfig().then((cfg) => {
+      const list = cfg.providers || []
+      setProviders(list)
+      setModel((prev) => (list.find((p) => p.id === prev) ? prev : list[0]?.id || ''))
+    })
   }, [])
 
   useEffect(() => {

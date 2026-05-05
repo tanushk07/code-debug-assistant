@@ -115,13 +115,26 @@ router.post('/login', async (req, res, next) => {
   }
 });
 
+// Block these routes cleanly when Google OAuth isn't configured, instead of
+// letting passport throw an opaque "Unknown authentication strategy" error.
+function requireGoogleConfigured(req, res, next) {
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    return res
+      .status(503)
+      .json({ error: 'Google OAuth is not configured on this server.' });
+  }
+  next();
+}
+
 router.get(
   '/google',
+  requireGoogleConfigured,
   passport.authenticate('google', { scope: ['profile', 'email'], session: false }),
 );
 
 router.get(
   '/google/callback',
+  requireGoogleConfigured,
   passport.authenticate('google', {
     session: false,
     failureRedirect: `${process.env.FRONTEND_URL}/login?error=oauth`,

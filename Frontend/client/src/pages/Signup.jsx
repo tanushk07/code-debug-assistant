@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../lib/api.js'
 import { setToken } from '../lib/auth.js'
+import { getConfig } from '../lib/config.js'
 
 export default function Signup() {
   const [name, setName]         = useState('')
@@ -9,7 +10,12 @@ export default function Signup() {
   const [password, setPassword] = useState('')
   const [err, setErr]           = useState(null)
   const [busy, setBusy]         = useState(false)
+  const [googleAuth, setGoogleAuth] = useState(false)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    getConfig().then((c) => setGoogleAuth(Boolean(c.googleAuth)))
+  }, [])
 
   async function onSubmit(e) {
     e.preventDefault()
@@ -76,11 +82,13 @@ export default function Signup() {
           </button>
         </form>
 
-        <div className="border-t-2 border-black pt-4">
-          <a href="/api/auth/google" className="pixel-btn w-full text-center block">
-            CONTINUE WITH GOOGLE
-          </a>
-        </div>
+        {googleAuth && (
+          <div className="border-t-2 border-black pt-4">
+            <a href="/api/auth/google" className="pixel-btn w-full text-center block">
+              CONTINUE WITH GOOGLE
+            </a>
+          </div>
+        )}
 
         <p className="font-terminal text-center text-lg">
           Already have one? <Link to="/login" className="underline">Log in</Link>

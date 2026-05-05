@@ -1,16 +1,22 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../lib/api.js'
 import { setToken } from '../lib/auth.js'
+import { getConfig } from '../lib/config.js'
 
 export default function Login() {
   const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
   const [err, setErr]           = useState(null)
   const [busy, setBusy]         = useState(false)
+  const [googleAuth, setGoogleAuth] = useState(false)
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const oauthErr = params.get('error')
+
+  useEffect(() => {
+    getConfig().then((c) => setGoogleAuth(Boolean(c.googleAuth)))
+  }, [])
 
   async function onSubmit(e) {
     e.preventDefault()
@@ -65,11 +71,13 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="border-t-2 border-black pt-4">
-          <a href="/api/auth/google" className="pixel-btn w-full text-center block">
-            CONTINUE WITH GOOGLE
-          </a>
-        </div>
+        {googleAuth && (
+          <div className="border-t-2 border-black pt-4">
+            <a href="/api/auth/google" className="pixel-btn w-full text-center block">
+              CONTINUE WITH GOOGLE
+            </a>
+          </div>
+        )}
 
         <p className="font-terminal text-center text-lg">
           No account? <Link to="/signup" className="underline">Sign up</Link>
