@@ -1,0 +1,16 @@
+{
+  "name": "aiwebapp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "React + Express dev workspace",
+  "scripts": {
+    "dev": "concurrently -n client,server -c blue,green \"npm --prefix Frontend/client run dev\" \"npm --prefix Backend run dev\"",
+    "client": "npm --prefix Frontend/client run dev",
+    "server": "npm --prefix Backend run dev",
+    "build": "npm --prefix Frontend/client run build",
+    "install:all": "npm install && npm --prefix Frontend/client install && npm --prefix Backend install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

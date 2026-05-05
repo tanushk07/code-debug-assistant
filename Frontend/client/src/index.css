@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root { height: 100%; margin: 0; }
+
+body {
+  font-family: 'VT323', monospace;
+  font-size: 18px;
+  background: #ffffff;
+  color: #0a0a0a;
+  -webkit-font-smoothing: none;
+  font-smooth: never;
+}
+
+/* Crisp scaling for any retro images */
+img.pixelated { image-rendering: pixelated; }
+
+/* ---- Reusable component primitives ---- */
+@layer components {
+  .pixel-btn {
+    @apply inline-block px-4 py-2 bg-white text-black border-2 border-black
+           shadow-pixel-sm font-pixel text-[10px] uppercase tracking-wider
+           cursor-pointer select-none
+           hover:bg-black hover:text-white
+           active:translate-x-[2px] active:translate-y-[2px] active:shadow-none
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-black;
+  }
+  .pixel-btn-primary {
+    @apply pixel-btn bg-black text-white hover:bg-white hover:text-black;
+  }
+  .pixel-input {
+    @apply w-full px-3 py-2 bg-white text-black border-2 border-black
+           font-terminal text-lg outline-none
+           focus:shadow-pixel-sm;
+  }
+  .pixel-card {
+    @apply bg-white border-2 border-black shadow-pixel;
+  }
+  .pixel-h1 {
+    @apply font-pixel text-2xl tracking-tight leading-tight;
+  }
+  .pixel-h2 {
+    @apply font-pixel text-base tracking-tight;
+  }
+  .pixel-label {
+    @apply font-pixel text-[10px] uppercase tracking-wider;
+  }
+}
+
+/* ---- Markdown bubble (for AI responses) ---- */
+.markdown-body {
+  font-family: 'VT323', monospace;
+  font-size: 1.125rem;
+  line-height: 1.4;
+}
+.markdown-body h1, .markdown-body h2, .markdown-body h3,
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.85rem;
+  margin: 0.85em 0 0.4em 0;
+  letter-spacing: 0.02em;
+}
+.markdown-body p   { margin: 0.5em 0; }
+.markdown-body ul, .markdown-body ol { padding-left: 1.5em; margin: 0.5em 0; }
+.markdown-body li  { margin: 0.2em 0; }
+.markdown-body strong { font-weight: 700; }
+.markdown-body a { color: #000; text-decoration: underline; }
+.markdown-body blockquote {
+  border-left: 3px solid #000;
+  padding-left: 0.75em;
+  margin: 0.5em 0;
+  opacity: 0.8;
+}
+.markdown-body code:not(pre code) {
+  background: #f5f5f5;
+  padding: 0 4px;
+  border: 1px solid rgba(0,0,0,0.25);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+}
+.markdown-body pre { margin: 0.6em 0; }
+.markdown-body table { border-collapse: collapse; margin: 0.5em 0; }
+.markdown-body th, .markdown-body td {
+  border: 1px solid #000; padding: 4px 8px;
+}
+
+/* ---- Webkit scrollbar (subtle, monochrome) ---- */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #fafafa; }
+::-webkit-scrollbar-thumb { background: #000; border: 2px solid #fafafa; }
