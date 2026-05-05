@@ -1,15 +1,30 @@
-# Optional — for Day 7 Render deploy.
-# Render auto-detects this and uses it instead of buildpacks.
+# syntax=docker/dockerfile:1.7
 
-FROM node:20-alpine
+# ---- deps stage --------------------------------------------------------
+# Build native modules (bcrypt) here so the runtime image stays small.
+FROM node:20-alpine AS deps
 WORKDIR /app
-
-# Install deps first (better layer cache)
+RUN apk add --no-cache python3 make g++ libc6-compat
 COPY package*.json ./
 RUN npm ci --omit=dev
 
-# Then copy source
-COPY src ./src
+# ---- runtime stage -----------------------------------------------------
+FROM node:20-alpine AS runtime
+ENV NODE_ENV=production
+WORKDIR /app
 
+# Non-root user for safer container runtime.
+RUN addgroup -S app && adduser -S app -G app
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY --chown=app:app package*.json ./
+COPY --chown=app:app src ./src
+COPY --chown=app:app schema.sql ./schema.sql
+
+USER app
 EXPOSE 3001
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=15s --retries=3 \
+  CMD wget -qO- http://127.0.0.1:3001/api/health || exit 1
+
 CMD ["node", "src/index.js"]

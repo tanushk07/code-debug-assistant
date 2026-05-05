@@ -1,0 +1,39 @@
+# Local-host docker-compose for the Code Debug Assistant.
+#
+#   docker compose up --build
+#
+# Requires Backend/.env (copy from Backend/.env.example and fill).
+# After it's up:
+#   - app: http://localhost:8080
+#   - api: proxied through nginx as /api/*  (no CORS to worry about)
+services:
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: cda-backend
+    env_file:
+      - ./Backend/.env
+    expose:
+      - "3001"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3001/api/health || exit 1"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./Frontend/client
+      dockerfile: Dockerfile
+      args:
+        # Empty → bundle uses relative URLs → nginx proxies /api/* to backend
+        VITE_API_URL: ""
+    container_name: cda-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
