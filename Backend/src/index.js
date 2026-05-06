@@ -1,5 +1,7 @@
 require('dotenv').config();
 
+const fs = require('node:fs');
+const path = require('node:path');
 const express = require('express');
 const cors = require('cors');
 const passport = require('passport');
@@ -10,6 +12,7 @@ const sessionsRouter = require('./routes/sessions');
 const uploadRouter = require('./routes/upload');
 const configRouter = require('./routes/config');
 const errorMiddleware = require('./middleware/error');
+const { UPLOADS_DIR, activeBackend } = require('./services/storage');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -27,6 +30,18 @@ app.get('/api/health', (req, res) => {
   res.json({ ok: true, uptime: process.uptime() });
 });
 
+// Serve uploaded screenshots when the local-disk fallback is in use.
+// (Harmless when R2 is configured — the directory just stays empty.)
+fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+app.use(
+  '/uploads',
+  express.static(UPLOADS_DIR, {
+    immutable: true,
+    maxAge: '1y',
+    setHeaders: (res) => res.setHeader('Access-Control-Allow-Origin', '*'),
+  }),
+);
+
 app.use('/api/auth', authRouter);
 app.use('/api/me', meRouter);
 app.use('/api/sessions', sessionsRouter);
@@ -38,5 +53,5 @@ app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }));
 app.use(errorMiddleware);
 
 app.listen(PORT, () => {
-  console.log(`API listening on http://localhost:${PORT}`);
+  console.log(`API listening on http://localhost:${PORT}  (storage: ${activeBackend()})`);
 });

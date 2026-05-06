@@ -14,7 +14,7 @@ const upload = multer({
 router.post('/', requireAuth, upload.single('image'), async (req, res, next) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file' });
-    const url = await uploadImage(req.file.buffer, req.file.mimetype, req.user.id);
+    const url = await uploadImage(req.file.buffer, req.file.mimetype, req.user.id, req);
     res.json({ url });
   } catch (err) {
     next(err);
