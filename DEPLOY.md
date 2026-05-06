@@ -98,6 +98,17 @@ Open Neon's SQL editor and run the contents of `Backend/schema.sql`. Same as loc
 5. Click **Create Static Site**. Build takes ~2 minutes.
 6. URL will be `https://cda-frontend.onrender.com`.
 
+### Step 4b — Configure SPA Routing (Crucial for React!)
+
+Because this is a Single Page Application, direct links to pages (like `/login` or `/auth/callback`) will return a 404 Not Found error unless you tell Render to send those requests to `index.html`.
+
+1. Go to the **Redirects/Rewrites** tab in your Render frontend service.
+2. Add a new rule:
+   - **Source:** `/*`
+   - **Destination:** `/index.html`
+   - **Action:** `Rewrite`
+3. Click **Save Changes**.
+
 ### Step 5 — Wire the two together
 
 1. Go back to the **backend** service → **Environment** → set `FRONTEND_URL` to your frontend's URL (e.g. `https://cda-frontend.onrender.com`). This unlocks CORS.
