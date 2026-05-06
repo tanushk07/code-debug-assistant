@@ -34,13 +34,18 @@ function RequireAuth({ children }) {
   return isAuthed() ? children : <Navigate to="/login" replace />
 }
 
+function RedirectIfAuthed({ children }) {
+  // If already logged in, skip the landing/login pages and go straight to the app.
+  return isAuthed() ? <Navigate to="/chat" replace /> : children
+}
+
 export default function App() {
   return (
     <Routes>
-      {/* Public */}
-      <Route path="/"               element={<Landing />} />
-      <Route path="/login"          element={<Login />} />
-      <Route path="/signup"         element={<Signup />} />
+      {/* Public (redirect to app if already logged in) */}
+      <Route path="/"               element={<RedirectIfAuthed><Landing /></RedirectIfAuthed>} />
+      <Route path="/login"          element={<RedirectIfAuthed><Login /></RedirectIfAuthed>} />
+      <Route path="/signup"         element={<RedirectIfAuthed><Signup /></RedirectIfAuthed>} />
       <Route path="/auth/callback"  element={<AuthCallback />} />
 
       {/* Protected */}
