@@ -1,0 +1,62 @@
+<!--
+  Open this file in a browser, take a screenshot, then upload it as a
+  screenshot in the Code Debug Assistant UI. It mimics a React runtime
+  error overlay so the AI has something visual to anchor against.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Buggy React App</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #f5f5f5; }
+    .app { padding: 48px; max-width: 720px; margin: 0 auto; }
+    .app h1 { color: #1f2937; font-size: 28px; margin: 0 0 12px; }
+    .app p { color: #6b7280; }
+
+    .error-overlay {
+      position: fixed; inset: 0; padding: 48px 64px;
+      background: #1a0202; color: #ffd2d2;
+      font-family: ui-monospace, "JetBrains Mono", monospace;
+      font-size: 14px; line-height: 1.5;
+      box-sizing: border-box; overflow: auto;
+      border-top: 6px solid #ef4444;
+    }
+    .err-label { color: #fca5a5; font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 6px; }
+    .err-title { color: #ef4444; font-size: 22px; font-weight: 700; margin-bottom: 24px; border-bottom: 1px solid #7f1d1d; padding-bottom: 12px; }
+    .stack { color: #fca5a5; white-space: pre-wrap; }
+    .stack .file { color: #60a5fa; }
+    .stack .at   { color: #9ca3af; }
+    .warn-block { margin-top: 28px; padding: 16px; background: #2a0808; border-left: 4px solid #f59e0b; }
+    .warn-title { color: #fbbf24; font-weight: 700; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>User Directory</h1>
+    <p>Loading users…</p>
+  </div>
+
+  <div class="error-overlay">
+    <div class="err-label">Unhandled Runtime Error</div>
+    <div class="err-title">TypeError: Cannot read properties of undefined (reading 'map')</div>
+
+    <div class="stack">
+      <span class="at">at</span> UserList (<span class="file">UserList.jsx:18:13</span>)
+      <br /><span class="at">at</span> renderWithHooks (<span class="file">react-dom.development.js:14985:18</span>)
+      <br /><span class="at">at</span> mountIndeterminateComponent (<span class="file">react-dom.development.js:17811:13</span>)
+      <br /><span class="at">at</span> beginWork (<span class="file">react-dom.development.js:19049:16</span>)
+    </div>
+
+    <div class="warn-block">
+      <div class="warn-title">Warning: Maximum update depth exceeded.</div>
+      This can happen when a component calls setState inside useEffect, but
+      useEffect either doesn't have a dependency array, or one of the
+      dependencies changes on every render.
+      <br /><br />
+      <span class="at">at</span> UserList (<span class="file">UserList.jsx:6:3</span>)
+    </div>
+  </div>
+</body>
+</html>
