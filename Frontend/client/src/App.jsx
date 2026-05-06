@@ -26,7 +26,6 @@ import Login from './pages/Login.jsx'
 import Signup from './pages/Signup.jsx'
 import AuthCallback from './pages/AuthCallback.jsx'
 import Chat from './pages/Chat.jsx'
-import Profile from './pages/Profile.jsx'
 import { isAuthed } from './lib/auth.js'
 
 function RequireAuth({ children }) {
@@ -51,7 +50,6 @@ export default function App() {
       {/* Protected */}
       <Route path="/chat"            element={<RequireAuth><Chat /></RequireAuth>} />
       <Route path="/chat/:sessionId" element={<RequireAuth><Chat /></RequireAuth>} />
-      <Route path="/profile"         element={<RequireAuth><Profile /></RequireAuth>} />
 
       {/* Catch-all */}
       <Route path="*" element={<Navigate to="/" replace />} />

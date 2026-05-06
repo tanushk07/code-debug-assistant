@@ -5,6 +5,7 @@ import CodeEditor from '../components/CodeEditor.jsx'
 import ErrorLog from '../components/ErrorLog.jsx'
 import ImageUpload from '../components/ImageUpload.jsx'
 import ChatPanel from '../components/ChatPanel.jsx'
+import ProfileModal from '../components/ProfileModal.jsx'
 import { useSession } from '../hooks/useSession.js'
 import { api } from '../lib/api.js'
 import { clearToken } from '../lib/auth.js'
@@ -13,6 +14,7 @@ export default function Chat() {
   const { sessionId } = useParams()
   const navigate = useNavigate()
   const creating = useRef(false)
+  const [showProfile, setShowProfile] = useState(false)
 
   // ---- Resizable panel sizes (persisted to localStorage) ----
   const [sidebarW, setSidebarW] = useState(() => parseInt(localStorage.getItem('cda.sidebarW')) || 288)
@@ -119,7 +121,7 @@ export default function Chat() {
             placeholder="UNTITLED SESSION"
             className="font-pixel text-[10px] uppercase tracking-wider bg-transparent outline-none flex-1 placeholder:opacity-40"
           />
-          <Link to="/profile" className="pixel-label hover:underline">PROFILE</Link>
+          <button onClick={() => setShowProfile(true)} className="pixel-label hover:underline">PROFILE</button>
           <button onClick={logout} className="pixel-label hover:underline">LOGOUT</button>
         </header>
 
@@ -163,6 +165,8 @@ export default function Chat() {
           onMessageComplete={refetch}
         />
       </div>
+
+      {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}
     </div>
   )
 }
