@@ -22,6 +22,30 @@ router.get('/', async (req, res, next) => {
 
 router.post('/', async (req, res, next) => {
   try {
+    // 1. Re-use an empty session if one already exists for this user.
+    // "Empty" = default title, no code files, no error logs, no images, and no messages.
+    const emptyCheck = await query(
+      `SELECT s.id
+       FROM debug_sessions s
+       LEFT JOIN session_messages m ON s.id = m.session_id
+       WHERE s.user_id = $1
+         AND s.title = 'Untitled session'
+         AND (s.files = '[]'::jsonb OR s.files IS NULL)
+         AND (s.error_log IS NULL OR s.error_log = '')
+         AND (s.images = '[]'::jsonb OR s.images IS NULL)
+         AND (s.image_path IS NULL OR s.image_path = '')
+       GROUP BY s.id
+       HAVING COUNT(m.id) = 0
+       ORDER BY s.updated_at DESC
+       LIMIT 1`,
+      [req.user.id]
+    );
+
+    if (emptyCheck.rows.length > 0) {
+      return res.status(200).json({ id: emptyCheck.rows[0].id });
+    }
+
+    // 2. Otherwise create a new one
     const { rows } = await query(
       `INSERT INTO debug_sessions (user_id) VALUES ($1) RETURNING id`,
       [req.user.id],
