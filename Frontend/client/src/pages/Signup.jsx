@@ -107,7 +107,7 @@ export default function Signup() {
 
         {googleAuth && (
           <div className="border-t-2 border-black pt-4">
-            <a href="/api/auth/google" className="pixel-btn w-full text-center block">
+            <a href={`${import.meta.env.VITE_API_URL || ''}/api/auth/google`} className="pixel-btn w-full text-center block">
               CONTINUE WITH GOOGLE
             </a>
           </div>
