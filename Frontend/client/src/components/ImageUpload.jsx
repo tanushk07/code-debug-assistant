@@ -1,45 +1,57 @@
-import { useEffect, useRef, useState } from 'react'
-import { Image as KImage, Layer, Rect, Stage } from 'react-konva'
+// Multi-screenshot panel.
+//
+//   value:    [{ url }]  — current set of screenshots for the session
+//   onChange: (newArray) => void  — called whenever the list changes
+//
+//   Shows a thumbnail strip with hover-revealed edit (pencil) and delete (X)
+//   buttons per image, plus a "+ Add" tile at the end. The edit button opens
+//   <AnnotationOverlay>; on save we replace that thumbnail's URL with the
+//   newly uploaded annotated image.
+
+import { useRef, useState } from 'react'
 import { getToken } from '../lib/auth.js'
+import AnnotationOverlay from './AnnotationOverlay.jsx'
+
+const MAX_IMAGES = 8
+const MAX_SIZE   = 5 * 1024 * 1024  // 5 MB per file
 
 export default function ImageUpload({ value, onChange }) {
-  const [img, setImg]            = useState(null)
-  const [rects, setRects]        = useState([])
-  const [uploading, setUploading]= useState(false)
-  const [err, setErr]            = useState(null)
-  const drawing = useRef(null)
+  const images = Array.isArray(value) ? value : []
+  const [uploading, setUploading] = useState(false)
+  const [err, setErr]             = useState(null)
+  const [editIdx, setEditIdx]     = useState(null)  // index of image being annotated
   const fileRef = useRef()
 
-  // Load the URL into an HTMLImageElement so Konva can render it.
-  useEffect(() => {
-    if (!value) { setImg(null); setRects([]); return }
-    const i = new window.Image()
-    i.crossOrigin = 'anonymous'
-    i.src = value
-    i.onload  = () => setImg(i)
-    i.onerror = () => setErr('Could not load image')
-  }, [value])
+  async function uploadFile(file) {
+    if (file.size > MAX_SIZE) throw new Error('File too big (5 MB max)')
+    const fd = new FormData()
+    fd.append('image', file)
+    const r = await fetch('/api/upload', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${getToken()}` },
+      body: fd,
+    })
+    if (!r.ok) {
+      let msg = r.statusText
+      try { msg = (await r.json()).error || msg } catch {}
+      throw new Error(msg)
+    }
+    return (await r.json()).url
+  }
 
-  async function handleFile(e) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    if (file.size > 5 * 1024 * 1024) { setErr('File too big (5 MB max)'); return }
-    setErr(null); setUploading(true); setRects([])
+  async function handleFiles(e) {
+    const files = Array.from(e.target.files || [])
+    if (!files.length) return
+    setErr(null); setUploading(true)
     try {
-      const fd = new FormData()
-      fd.append('image', file)
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${getToken()}` },
-        body: fd,
-      })
-      if (!res.ok) {
-        let msg = res.statusText
-        try { msg = (await res.json()).error || msg } catch {}
-        throw new Error(msg)
+      const room = MAX_IMAGES - images.length
+      const accepted = files.slice(0, room)
+      if (files.length > accepted.length) {
+        setErr(`Only ${room} more screenshot${room === 1 ? '' : 's'} allowed (max ${MAX_IMAGES})`)
       }
-      const { url } = await res.json()
-      onChange(url)
+      const urls = []
+      for (const f of accepted) urls.push({ url: await uploadFile(f) })
+      onChange([...images, ...urls])
     } catch (e) {
       setErr(e.message)
     } finally {
@@ -48,86 +60,108 @@ export default function ImageUpload({ value, onChange }) {
     }
   }
 
-  // Konva drawing handlers
-  function onDown(e) {
-    const pos = e.target.getStage().getPointerPosition()
-    drawing.current = { x: pos.x, y: pos.y, w: 0, h: 0 }
-    setRects((r) => [...r, drawing.current])
+  function deleteImage(idx) {
+    onChange(images.filter((_, i) => i !== idx))
   }
-  function onMove(e) {
-    if (!drawing.current) return
-    const pos = e.target.getStage().getPointerPosition()
-    const next = {
-      ...drawing.current,
-      w: pos.x - drawing.current.x,
-      h: pos.y - drawing.current.y,
-    }
-    drawing.current = next
-    setRects((r) => [...r.slice(0, -1), next])
-  }
-  function onUp() { drawing.current = null }
 
-  // Scale image so it fits the column
-  const MAX_W = 360
-  const scale = img ? Math.min(1, MAX_W / img.width) : 1
-  const sw = img ? img.width  * scale : 0
-  const sh = img ? img.height * scale : 0
+  function replaceImage(idx, newUrl) {
+    onChange(images.map((img, i) => (i === idx ? { url: newUrl } : img)))
+    setEditIdx(null)
+  }
+
+  const canAddMore = images.length < MAX_IMAGES
 
   return (
-    <div className="flex flex-col border-t-2 border-black">
+    <div className="flex flex-col border-t-2 border-black flex-shrink-0">
       <div className="flex items-center bg-gray-50 border-b-2 border-black h-9 px-3 gap-3">
-        <span className="pixel-label">SCREENSHOT</span>
-        {value && rects.length > 0 && (
-          <button onClick={() => setRects([])} className="pixel-label hover:underline">
-            CLEAR ANNOTATIONS
-          </button>
+        <span className="pixel-label">SCREENSHOTS{images.length ? ` (${images.length})` : ''}</span>
+        {uploading && <span className="pixel-label opacity-60">UPLOADING…</span>}
+        {err && <span className="pixel-label text-red-700">[ {err} ]</span>}
+      </div>
+
+      <div className="p-3 flex gap-2 overflow-x-auto">
+        {images.map((img, i) => (
+          <Thumbnail
+            key={img.url + i}
+            url={img.url}
+            onEdit={() => setEditIdx(i)}
+            onDelete={() => deleteImage(i)}
+          />
+        ))}
+
+        {canAddMore && (
+          <label
+            className="flex-shrink-0 w-20 h-20 border-2 border-dashed border-black flex items-center justify-center cursor-pointer hover:bg-gray-100 font-pixel text-[10px] uppercase"
+            title="Add screenshot"
+          >
+            + ADD
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleFiles}
+              className="sr-only"
+            />
+          </label>
         )}
-        {value && (
-          <button onClick={() => onChange(null)} className="ml-auto pixel-label hover:underline">
-            REMOVE
-          </button>
+
+        {!images.length && !canAddMore && null}
+        {!images.length && (
+          <span className="font-terminal text-base opacity-50 self-center pl-1">
+            {/* tip */}
+            no screenshots yet
+          </span>
         )}
       </div>
 
-      <div className="p-3 space-y-2">
-        {!value && (
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            onChange={handleFile}
-            className="font-terminal text-base"
-          />
-        )}
-        {uploading && <p className="font-terminal text-lg">UPLOADING…</p>}
-        {err && <p className="font-terminal text-red-700 text-lg">[ {err} ]</p>}
+      {editIdx !== null && images[editIdx] && (
+        <AnnotationOverlay
+          imageUrl={images[editIdx].url}
+          onSave={(newUrl) => replaceImage(editIdx, newUrl)}
+          onClose={() => setEditIdx(null)}
+        />
+      )}
+    </div>
+  )
+}
 
-        {img && (
-          <>
-            <div className="border-2 border-black inline-block leading-[0]">
-              <Stage
-                width={sw}
-                height={sh}
-                onMouseDown={onDown}
-                onMouseMove={onMove}
-                onMouseUp={onUp}
-                onMouseLeave={onUp}
-              >
-                <Layer>
-                  <KImage image={img} width={sw} height={sh} />
-                  {rects.map((r, i) => (
-                    <Rect
-                      key={i}
-                      x={r.x} y={r.y} width={r.w} height={r.h}
-                      stroke="#dc2626" strokeWidth={2} dash={[4, 4]}
-                    />
-                  ))}
-                </Layer>
-              </Stage>
-            </div>
-            <p className="font-terminal text-sm opacity-60">[ click + drag to annotate ]</p>
-          </>
-        )}
+// ---- Thumbnail -------------------------------------------------------
+function Thumbnail({ url, onEdit, onDelete }) {
+  return (
+    <div className="relative flex-shrink-0 w-20 h-20 border-2 border-black bg-white group overflow-hidden">
+      <img
+        src={url}
+        alt="screenshot"
+        className="w-full h-full object-cover"
+        loading="lazy"
+      />
+
+      {/* Hover toolbar */}
+      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
+        <button
+          onClick={onEdit}
+          className="w-8 h-8 bg-white border-2 border-black flex items-center justify-center hover:bg-yellow-200"
+          title="Annotate"
+          aria-label="Edit / annotate"
+        >
+          {/* pencil */}
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+          </svg>
+        </button>
+        <button
+          onClick={onDelete}
+          className="w-8 h-8 bg-white border-2 border-black flex items-center justify-center hover:bg-red-200"
+          title="Delete"
+          aria-label="Delete screenshot"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6"  x2="6"  y2="18" />
+            <line x1="6"  y1="6"  x2="18" y2="18" />
+          </svg>
+        </button>
       </div>
     </div>
   )

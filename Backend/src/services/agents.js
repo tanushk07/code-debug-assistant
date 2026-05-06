@@ -30,8 +30,16 @@ function buildContextMessages(session, priorMessages, userMessage) {
     turn.push({ type: 'text', text: `<error_log>\n${session.error_log}\n</error_log>` });
   }
 
-  if (session.image_path) {
-    turn.push({ type: 'image', url: session.image_path });
+  // Images: prefer the new `images` array; fall back to the legacy single `image_path`.
+  const imageUrls = [];
+  if (Array.isArray(session.images)) {
+    for (const img of session.images) {
+      if (img?.url) imageUrls.push(img.url);
+    }
+  }
+  if (!imageUrls.length && session.image_path) imageUrls.push(session.image_path);
+  for (const url of imageUrls) {
+    turn.push({ type: 'image', url });
   }
 
   turn.push({ type: 'text', text: userMessage });

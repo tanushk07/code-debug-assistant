@@ -22,7 +22,8 @@ CREATE TABLE IF NOT EXISTS debug_sessions (
   title       VARCHAR DEFAULT 'Untitled session',
   files       JSONB   DEFAULT '[]',       -- [{ name, language, content }]
   error_log   TEXT,
-  image_path  VARCHAR,                     -- R2 public URL (NEVER store bytes here)
+  image_path  VARCHAR,                     -- LEGACY: single image URL, kept for compat
+  images      JSONB   DEFAULT '[]',        -- [{ url }] — supports multiple screenshots
   created_at  TIMESTAMP DEFAULT NOW(),
   updated_at  TIMESTAMP DEFAULT NOW()
 );

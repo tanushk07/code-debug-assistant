@@ -52,7 +52,8 @@ router.get('/:id', async (req, res, next) => {
 
 router.patch('/:id', async (req, res, next) => {
   try {
-    const allowed = ['title', 'error_log', 'image_path', 'files'];
+    const allowed = ['title', 'error_log', 'image_path', 'files', 'images'];
+    const jsonbCols = new Set(['files', 'images']);
     const sets = [];
     const values = [];
     let i = 1;
@@ -60,7 +61,7 @@ router.patch('/:id', async (req, res, next) => {
       if (k in req.body) {
         sets.push(`${k} = $${i++}`);
         // pg accepts a JS object for JSONB, but stringify keeps it explicit.
-        values.push(k === 'files' ? JSON.stringify(req.body[k]) : req.body[k]);
+        values.push(jsonbCols.has(k) ? JSON.stringify(req.body[k]) : req.body[k]);
       }
     }
     if (!sets.length) return res.status(400).json({ error: 'Nothing to update' });

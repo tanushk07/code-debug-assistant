@@ -22,8 +22,9 @@ function toMessages(system, messages) {
       .filter((p) => p.type === 'text')
       .map((p) => p.text)
       .join('\n');
-    const imgNote = m.parts.some((p) => p.type === 'image')
-      ? '\n[user attached a screenshot — this model is text-only and cannot view it]'
+    const imgCount = m.parts.filter((p) => p.type === 'image').length;
+    const imgNote = imgCount
+      ? `\n[user attached ${imgCount} screenshot${imgCount > 1 ? 's' : ''} — this model is text-only and cannot view them]`
       : '';
     out.push({
       role: m.role === 'assistant' ? 'assistant' : 'user',
