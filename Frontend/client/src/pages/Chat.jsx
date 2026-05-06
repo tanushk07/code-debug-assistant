@@ -85,13 +85,21 @@ export default function Chat() {
   if (!sessionId) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="pixel-label">CREATING SESSION…</div>
+        <div className="pixel-label pixel-loading">CREATING SESSION</div>
       </div>
     )
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-white">
+    <div className="flex h-screen overflow-hidden bg-white relative">
+      {loading && (
+        <div className="absolute inset-0 z-50 bg-white/50 backdrop-blur-[2px] flex items-center justify-center">
+          <div className="pixel-card px-8 py-6">
+            <span className="font-pixel text-lg uppercase tracking-wider pixel-loading">LOADING SESSION</span>
+          </div>
+        </div>
+      )}
+
       {/* ---- Sidebar ---- */}
       <div style={{ width: sidebarW }} className="flex-shrink-0 h-full overflow-hidden">
         <SessionSidebar activeId={sessionId} refreshKey={messages.length} />

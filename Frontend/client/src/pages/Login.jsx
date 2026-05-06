@@ -90,7 +90,7 @@ export default function Login() {
           {err && <p className="font-terminal text-red-700 text-lg">[ {err} ]</p>}
           {oauthErr && <p className="font-terminal text-red-700 text-lg">[ google auth failed ]</p>}
           <button type="submit" disabled={busy} className="pixel-btn-primary w-full">
-            {busy ? 'LOADING…' : 'LOG IN'}
+            {busy ? <span className="pixel-loading">LOADING</span> : 'LOG IN'}
           </button>
         </form>
 

@@ -101,7 +101,7 @@ export default function Signup() {
           </div>
           {err && <p className="font-terminal text-red-700 text-lg">[ {err} ]</p>}
           <button type="submit" disabled={busy} className="pixel-btn-primary w-full">
-            {busy ? 'CREATING…' : 'CREATE ACCOUNT'}
+            {busy ? <span className="pixel-loading">CREATING</span> : 'CREATE ACCOUNT'}
           </button>
         </form>
 
