@@ -111,7 +111,8 @@ export default function AnnotationOverlay({ imageUrl, onSave, onClose }) {
 
       const fd = new FormData()
       fd.append('image', blob, 'annotated.png')
-      const r = await fetch('/api/upload', {
+      const BASE = import.meta.env.VITE_API_URL || ''
+      const r = await fetch(`${BASE}/api/upload`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${getToken()}` },
         body: fd,

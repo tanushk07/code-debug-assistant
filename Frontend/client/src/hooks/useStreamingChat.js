@@ -13,7 +13,8 @@ export function useStreamingChat(sessionId, onComplete) {
     abortRef.current = new AbortController()
 
     try {
-      const res = await fetch(`/api/sessions/${sessionId}/messages`, {
+      const BASE = import.meta.env.VITE_API_URL || ''
+      const res = await fetch(`${BASE}/api/sessions/${sessionId}/messages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

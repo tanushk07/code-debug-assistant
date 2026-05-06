@@ -5,9 +5,11 @@
 
 let _cache
 
+const BASE = import.meta.env.VITE_API_URL || ''
+
 export function getConfig() {
   if (!_cache) {
-    _cache = fetch('/api/config')
+    _cache = fetch(`${BASE}/api/config`)
       .then((r) => (r.ok ? r.json() : { providers: [], googleAuth: false }))
       .catch(() => ({ providers: [], googleAuth: false }))
   }

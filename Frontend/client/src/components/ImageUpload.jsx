@@ -26,7 +26,8 @@ export default function ImageUpload({ value, onChange }) {
     if (file.size > MAX_SIZE) throw new Error('File too big (5 MB max)')
     const fd = new FormData()
     fd.append('image', file)
-    const r = await fetch('/api/upload', {
+    const BASE = import.meta.env.VITE_API_URL || ''
+    const r = await fetch(`${BASE}/api/upload`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${getToken()}` },
       body: fd,
