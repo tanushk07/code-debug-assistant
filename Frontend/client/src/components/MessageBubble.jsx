@@ -9,6 +9,8 @@ const blockStyle = {
   fontSize: '0.82rem',
   lineHeight: 1.4,
   fontFamily: '"JetBrains Mono", monospace',
+  overflowX: 'auto',
+  maxWidth: '100%',
 }
 
 // react-markdown v9 dropped the `inline` prop, so we detect block code via the
@@ -68,8 +70,8 @@ function ClassificationCard({ data }) {
 export default function MessageBubble({ role, content, classification, live }) {
   if (role === 'user') {
     return (
-      <div className="flex justify-end">
-        <div className="max-w-[88%] bg-black text-white p-3 border-2 border-black shadow-pixel-sm">
+      <div className="flex justify-end min-w-0">
+        <div className="max-w-[88%] bg-black text-white p-3 border-2 border-black shadow-pixel-sm min-w-0 overflow-hidden">
           <div className="pixel-label mb-1 opacity-60">YOU</div>
           <div className="font-terminal text-lg whitespace-pre-wrap break-words">
             {content}
@@ -80,13 +82,13 @@ export default function MessageBubble({ role, content, classification, live }) {
   }
 
   return (
-    <div className="flex justify-start">
-      <div className="bg-white p-3 border-2 border-black shadow-pixel-sm w-full">
+    <div className="flex justify-start min-w-0">
+      <div className="bg-white p-3 border-2 border-black shadow-pixel-sm w-full min-w-0 overflow-hidden">
         <div className="pixel-label mb-1 opacity-60">
           ASSISTANT{live ? ' …' : ''}
         </div>
         <ClassificationCard data={classification} />
-        <div className="markdown-body break-words">
+        <div className="markdown-body break-words min-w-0">
           <ReactMarkdown components={MD_COMPONENTS}>
             {content || ''}
           </ReactMarkdown>

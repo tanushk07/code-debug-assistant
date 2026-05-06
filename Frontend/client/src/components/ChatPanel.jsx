@@ -6,11 +6,11 @@ import { getConfig } from '../lib/config.js'
 export default function ChatPanel({ sessionId, messages, onMessageComplete }) {
   const { streaming, draft, classification, error, send, abort } =
     useStreamingChat(sessionId, onMessageComplete)
-  const [input, setInput]         = useState('')
+  const [input, setInput] = useState('')
   const [providers, setProviders] = useState([])   // [{ id, label }]
-  const [model, setModel]         = useState(() => localStorage.getItem('cda.model') || '')
+  const [model, setModel] = useState(() => localStorage.getItem('cda.model') || '')
   const bottomRef = useRef()
-  const taRef     = useRef()
+  const taRef = useRef()
 
   // Discover which LLM providers the backend has keys for.
   useEffect(() => {
@@ -47,7 +47,7 @@ export default function ChatPanel({ sessionId, messages, onMessageComplete }) {
   const noProviders = providers.length === 0
 
   return (
-    <aside className="flex flex-col h-full border-l-2 border-black bg-white min-h-0">
+    <aside className="flex flex-col h-full bg-white min-h-0 min-w-0 overflow-hidden">
       <div className="border-b-2 border-black h-9 flex items-center px-3 bg-gray-50">
         <span className="pixel-label">CHAT</span>
         {streaming && <span className="ml-auto pixel-label opacity-60">STREAMING…</span>}
