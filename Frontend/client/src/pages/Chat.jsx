@@ -75,7 +75,7 @@ export default function Chat() {
       })()
   }, [sessionId, navigate])
 
-  const { session, messages, save, refetch } = useSession(sessionId)
+  const { session, messages, save, refetch, loading } = useSession(sessionId)
 
   function logout() {
     clearToken()
