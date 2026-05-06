@@ -32,7 +32,11 @@ app.get('/api/health', (req, res) => {
 
 // Serve uploaded screenshots when the local-disk fallback is in use.
 // (Harmless when R2 is configured — the directory just stays empty.)
-fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+try {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+} catch (err) {
+  console.warn(`⚠ Could not create ${UPLOADS_DIR}: ${err.message} (OK if using R2)`);
+}
 app.use(
   '/uploads',
   express.static(UPLOADS_DIR, {

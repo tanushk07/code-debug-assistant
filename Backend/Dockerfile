@@ -21,6 +21,9 @@ COPY --chown=app:app package*.json ./
 COPY --chown=app:app src ./src
 COPY --chown=app:app schema.sql ./schema.sql
 
+# Pre-create the uploads directory so the non-root user can write to it.
+RUN mkdir -p /app/uploads && chown app:app /app/uploads
+
 USER app
 EXPOSE 3001
 
