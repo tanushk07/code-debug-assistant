@@ -1,11 +1,5 @@
-/**
- * DesktopGate — blocks the app on viewports < MIN_WIDTH and shows a
- * themed splash explaining why. Code editor + 3-column drag-resize UI is
- * fundamentally desktop-shaped; rather than ship a half-broken mobile
- * experience, gate it honestly.
- *
- * Mounted at the top of <main.jsx> so it intercepts every route.
- */
+// Blocks viewports under MIN_WIDTH with a themed splash.
+// Mounted in main.jsx so it intercepts every route.
 
 import { useEffect, useState } from 'react'
 
@@ -104,10 +98,9 @@ export default function DesktopGate({ children }) {
         <h1 className="pixel-h1 mb-3">DESKTOP{' '}REQUIRED</h1>
 
         <p className="font-terminal text-xl leading-snug mb-5">
-          This is a code-debugging workspace — Monaco editor, multi-file tabs,
-          and a 3-column drag-resize layout. It needs a real keyboard and at
+          This app is built for full-size screens. You need a keyboard and at
           least <span className="font-pixel text-[10px]">{MIN_WIDTH}px</span> of
-          width to be usable.
+          width to use it comfortably.
         </p>
 
         {/* Live resolution readout */}
