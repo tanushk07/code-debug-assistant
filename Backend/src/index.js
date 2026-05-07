@@ -11,6 +11,7 @@ const meRouter = require('./routes/me');
 const sessionsRouter = require('./routes/sessions');
 const uploadRouter = require('./routes/upload');
 const configRouter = require('./routes/config');
+const shareRouter = require('./routes/share');
 const errorMiddleware = require('./middleware/error');
 const { UPLOADS_DIR, activeBackend } = require('./services/storage');
 
@@ -51,6 +52,7 @@ app.use('/api/me', meRouter);
 app.use('/api/sessions', sessionsRouter);
 app.use('/api/upload', uploadRouter);
 app.use('/api/config', configRouter);
+app.use('/api/share', shareRouter); // public — no auth
 
 app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }));
 

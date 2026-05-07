@@ -26,6 +26,7 @@ import Login from './pages/Login.jsx'
 import Signup from './pages/Signup.jsx'
 import AuthCallback from './pages/AuthCallback.jsx'
 import Chat from './pages/Chat.jsx'
+import SharePage from './pages/SharePage.jsx'
 import { isAuthed } from './lib/auth.js'
 
 function RequireAuth({ children }) {
@@ -46,6 +47,9 @@ export default function App() {
       <Route path="/login"          element={<RedirectIfAuthed><Login /></RedirectIfAuthed>} />
       <Route path="/signup"         element={<RedirectIfAuthed><Signup /></RedirectIfAuthed>} />
       <Route path="/auth/callback"  element={<AuthCallback />} />
+
+      {/* Public read-only share viewer (no auth) */}
+      <Route path="/share/:token"   element={<SharePage />} />
 
       {/* Protected */}
       <Route path="/chat"            element={<RequireAuth><Chat /></RequireAuth>} />

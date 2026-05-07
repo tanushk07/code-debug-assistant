@@ -1,3 +1,4 @@
+const crypto = require('node:crypto');
 const router = require('express').Router();
 const requireAuth = require('../middleware/auth');
 const { query } = require('../db');
@@ -112,6 +113,58 @@ router.delete('/:id', async (req, res, next) => {
     );
     if (!result.rowCount) return res.status(404).json({ error: 'Not found' });
     res.status(204).end();
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ---- Read-only share toggle (owner-side) ----
+
+// GET /:id/share — returns { token: string|null }
+router.get('/:id/share', async (req, res, next) => {
+  try {
+    const { rows } = await query(
+      'SELECT share_token FROM debug_sessions WHERE id = $1 AND user_id = $2',
+      [req.params.id, req.user.id],
+    );
+    if (!rows[0]) return res.status(404).json({ error: 'Not found' });
+    res.json({ token: rows[0].share_token });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /:id/share — enables sharing if not already; returns { token }
+router.post('/:id/share', async (req, res, next) => {
+  try {
+    const { rows } = await query(
+      'SELECT share_token FROM debug_sessions WHERE id = $1 AND user_id = $2',
+      [req.params.id, req.user.id],
+    );
+    if (!rows[0]) return res.status(404).json({ error: 'Not found' });
+    let token = rows[0].share_token;
+    if (!token) {
+      token = crypto.randomBytes(16).toString('hex'); // 128 bits, unguessable
+      await query(
+        'UPDATE debug_sessions SET share_token = $1 WHERE id = $2',
+        [token, req.params.id],
+      );
+    }
+    res.json({ token });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE /:id/share — revokes the share link
+router.delete('/:id/share', async (req, res, next) => {
+  try {
+    const result = await query(
+      'UPDATE debug_sessions SET share_token = NULL WHERE id = $1 AND user_id = $2',
+      [req.params.id, req.user.id],
+    );
+    if (!result.rowCount) return res.status(404).json({ error: 'Not found' });
+    res.json({ ok: true });
   } catch (err) {
     next(err);
   }

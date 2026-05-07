@@ -4,7 +4,7 @@
 > screenshots; chat with an LLM that always sees the full context.
 
 **GitHub:** https://github.com/tanushk07/code-debug-assistant
-**Live URL:** _pending deploy — see [DEPLOY.md](./DEPLOY.md)_
+**Live app:** https://code-debug-assistant-1.onrender.com/
 
 Built for the [Nebula9.ai](https://nebula9.ai) full-stack internship.
 
@@ -24,8 +24,9 @@ npm run install:all
 #               OPENAI_API_KEY (paid)
 #               ANTHROPIC_API_KEY (paid)
 
-# 3. Apply schema to Neon (one time)
+# 3. Apply schema to Neon (idempotent — safe to re-run after pulling updates)
 #    Open Neon SQL editor → paste Backend/schema.sql → run
+#    (CREATE TABLE IF NOT EXISTS + ALTER TABLE ADD COLUMN IF NOT EXISTS)
 
 # 4. Start both servers
 npm run dev
@@ -110,6 +111,9 @@ See [DECISIONS.md](./DECISIONS.md) for why each choice.
 | GET / PATCH / DELETE | `/api/sessions/:id` | session detail |
 | POST | `/api/sessions/:id/messages` | streamed AI reply (SSE) |
 | POST | `/api/upload` | screenshot → R2 (or local) |
+| GET / POST / DELETE | `/api/sessions/:id/share` | toggle read-only public share |
+| GET  | `/api/share/:token` | public snapshot of a shared session |
+| GET  | `/api/share/:token/stream` | public SSE stream of live events |
 | GET  | `/api/config` | provider list + googleAuth flag |
 | GET  | `/api/health` | uptime probe |
 
@@ -123,11 +127,13 @@ repo-root/
 │  ├─ src/
 │  │  ├─ index.js                    Express entry
 │  │  ├─ db.js                        pg Pool
-│  │  ├─ routes/                      auth, me, sessions, messages, upload, config
+│  │  ├─ routes/                      auth, me, sessions, messages, upload,
+│  │  │                               config, share (public read-only)
 │  │  ├─ services/
 │  │  │  ├─ llm.js                    factory router for providers
 │  │  │  ├─ providers/                claude, openai, gemini, groq + index (auto-discover)
 │  │  │  ├─ agents.js                 classifier + fixer pipeline
+│  │  │  ├─ sessionEvents.js          in-memory pub/sub for live share viewers
 │  │  │  └─ storage.js                R2 + local-disk fallback
 │  │  ├─ middleware/                  auth.js, error.js
 │  │  └─ utils/jwt.js
@@ -136,10 +142,11 @@ repo-root/
 │  └─ uploads/                        local-disk storage (gitignored)
 ├─ Frontend/client/
 │  ├─ src/
-│  │  ├─ pages/                       Landing, Login, Signup, AuthCallback, Chat, Profile
+│  │  ├─ pages/                       Landing, Login, Signup, AuthCallback, Chat,
+│  │  │                               Profile, SharePage (public read-only)
 │  │  ├─ components/                  SessionSidebar, CodeEditor, ErrorLog,
 │  │  │                               ImageUpload, AnnotationOverlay, ChatPanel,
-│  │  │                               MessageBubble
+│  │  │                               MessageBubble, ShareButton, DesktopGate
 │  │  ├─ hooks/                       useSession, useStreamingChat
 │  │  └─ lib/                         api, auth, config
 │  ├─ Dockerfile + nginx.conf         prod image with SPA fallback + /api proxy
@@ -163,7 +170,11 @@ repo-root/
   the LLM gets a real image to look at.
 - **JWTs in localStorage** — XSS-readable; HttpOnly cookies would be
   stronger. See [DECISIONS.md](./DECISIONS.md#why-jwt-in-localstorage-not-httponly-cookies).
-- **No real-time collab** — single-user-per-session by design.
+- **Read-only live share, no two-way collab.** Click SHARE in the chat
+  header to mint a public link; viewers see the conversation stream live
+  but cannot send messages or edit code. Live events are pushed via an
+  in-memory pub/sub, so this works on a single backend instance — a
+  multi-instance deploy would need Redis pub/sub or similar.
 - **No RAG / doc retrieval** — context fits in modern LLMs' 100k+ windows.
 - **Local-disk storage** in dev means Anthropic/OpenAI vision can't
   reach images (server is on `localhost`). Gemini sidesteps this by

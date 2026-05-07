@@ -6,6 +6,7 @@ import ErrorLog from '../components/ErrorLog.jsx'
 import ImageUpload from '../components/ImageUpload.jsx'
 import ChatPanel from '../components/ChatPanel.jsx'
 import ProfileModal from '../components/ProfileModal.jsx'
+import ShareButton from '../components/ShareButton.jsx'
 import { useSession } from '../hooks/useSession.js'
 import { api } from '../lib/api.js'
 import { clearToken } from '../lib/auth.js'
@@ -121,6 +122,7 @@ export default function Chat() {
             placeholder="UNTITLED SESSION"
             className="font-pixel text-[10px] uppercase tracking-wider bg-transparent outline-none flex-1 placeholder:opacity-40"
           />
+          <ShareButton sessionId={sessionId} />
           <button onClick={() => setShowProfile(true)} className="pixel-label hover:underline">PROFILE</button>
           <button onClick={logout} className="pixel-label hover:underline">LOGOUT</button>
         </header>

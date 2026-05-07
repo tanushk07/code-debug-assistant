@@ -24,10 +24,18 @@ CREATE TABLE IF NOT EXISTS debug_sessions (
   error_log   TEXT,
   image_path  VARCHAR,                     -- LEGACY: single image URL, kept for compat
   images      JSONB   DEFAULT '[]',        -- [{ url }] — supports multiple screenshots
+  share_token VARCHAR,                     -- NULL until owner enables read-only public share
   created_at  TIMESTAMP DEFAULT NOW(),
   updated_at  TIMESTAMP DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_sessions_user ON debug_sessions(user_id);
+
+-- Idempotent migration for databases created before share_token existed.
+ALTER TABLE debug_sessions ADD COLUMN IF NOT EXISTS share_token VARCHAR;
+
+-- Partial unique index: many NULLs allowed, unique on actual tokens.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_sessions_share_token
+  ON debug_sessions(share_token) WHERE share_token IS NOT NULL;
 
 -- One row per chat message. Assistant messages also store the
 -- classifier's structured output (Agent 1) as JSONB.

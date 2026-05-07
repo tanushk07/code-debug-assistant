@@ -3,6 +3,7 @@ const router = require('express').Router({ mergeParams: true });
 const requireAuth = require('../middleware/auth');
 const { query } = require('../db');
 const { runAgents } = require('../services/agents');
+const { publish } = require('../services/sessionEvents');
 
 router.use(requireAuth);
 
@@ -34,6 +35,11 @@ router.post('/', async (req, res, next) => {
        VALUES ($1, 'user', $2)`,
       [sessionId, user_message],
     );
+    publish(sessionId, 'user_message', {
+      role: 'user',
+      content: user_message,
+      created_at: new Date().toISOString(),
+    });
 
     // 2b. Auto-title on first turn — runs BEFORE agents so the title sticks
     //     even if the LLM call later fails (quota, overload, etc.).
@@ -66,8 +72,14 @@ router.post('/', async (req, res, next) => {
       userMessage: user_message,
       model: model_id,
       signal: abort.signal,
-      onClassification: (c) => send('classification', c),
-      onToken: (t) => send('token', { text: t }),
+      onClassification: (c) => {
+        send('classification', c);
+        publish(sessionId, 'classification', c);
+      },
+      onToken: (t) => {
+        send('token', { text: t });
+        publish(sessionId, 'token', { text: t });
+      },
     });
 
     // 5. Persist assistant message + bump session timestamp
@@ -77,6 +89,15 @@ router.post('/', async (req, res, next) => {
       [sessionId, assistantText, model_id, classification],
     );
     await query('UPDATE debug_sessions SET updated_at = NOW() WHERE id = $1', [sessionId]);
+
+    publish(sessionId, 'assistant_message', {
+      role: 'assistant',
+      content: assistantText,
+      classification,
+      model_used: model_id,
+      created_at: new Date().toISOString(),
+    });
+    publish(sessionId, 'done', { ok: true });
 
     send('done', { ok: true });
     res.end();
