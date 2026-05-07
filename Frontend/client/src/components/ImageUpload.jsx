@@ -110,7 +110,6 @@ export default function ImageUpload({ value, onChange }) {
         {!images.length && !canAddMore && null}
         {!images.length && (
           <span className="font-terminal text-base opacity-50 self-center pl-1">
-            {/* tip */}
             no screenshots yet
           </span>
         )}

@@ -58,8 +58,9 @@ to talk about during the demo / interview.
 
 | Pattern | Where in this repo | One-line meaning |
 |---|---|---|
-| **Singleton** | `Backend/src/db.js` (Pool), `services/llm.js` (client), `services/storage.js` (S3Client) | One shared instance per process |
-| **Adapter** | `services/llm.js`, `services/storage.js` | Hide a vendor SDK behind a stable interface |
+| **Singleton** | `Backend/src/db.js` (Pool), `services/providers/*.js` (one client per vendor), `services/storage.js` (S3Client) | One shared instance per process |
+| **Adapter** | `services/providers/*.js`, `services/storage.js` | Hide a vendor SDK behind a stable interface |
+| **Factory / Strategy** | `services/llm.js` + `services/providers/index.js` | Auto-discover providers, route per request |
 | **Facade** | `Frontend/.../lib/api.js` | One simple call (`api(path)`) hiding fetch+auth+JSON+errors |
 | **Strategy** | Passport strategies (Google, plus your own local handler) | Interchangeable algorithms behind a common slot |
 | **Chain of Responsibility** | Express middleware chain | Each handler decides to act or pass on |

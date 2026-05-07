@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS session_messages (
   session_id      INT REFERENCES debug_sessions(id) ON DELETE CASCADE,
   role            VARCHAR NOT NULL,        -- 'user' | 'assistant'
   content         TEXT NOT NULL,
-  model_used      VARCHAR,                 -- 'claude' | 'gpt' | NULL
+  model_used      VARCHAR,                 -- 'groq' | 'gemini' | 'gpt' | 'claude' | NULL
   classification  JSONB,                   -- Agent 1 output; NULL on user rows
   created_at      TIMESTAMP DEFAULT NOW()
 );

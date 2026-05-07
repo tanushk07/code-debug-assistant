@@ -35,7 +35,7 @@ are testable in isolation. Data access is one file.
                                               (runAgents)
                                                 ┌───────┴───────┐
                                                 ▼               ▼
-                                           classify (Claude) → fix (Claude, streaming)
+                                           classify (LLM) → fix (LLM, streaming)
                                                 ▲               │
                                                 └── classification, tokens
                                                                 ▼

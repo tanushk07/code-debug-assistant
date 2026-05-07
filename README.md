@@ -46,7 +46,7 @@ error log and a screenshot you can use.
 ```
 ┌──────────────┐   HTTP   ┌──────────────┐   SQL    ┌──────────────┐
 │  React+Vite  │─────────▶│   Express    │─────────▶│  Postgres    │
-│   (Vercel)   │          │  (Render)    │          │   (Neon)     │
+│   (Render)   │          │  (Render)    │          │   (Neon)     │
 └──────────────┘          └──────┬───────┘          └──────────────┘
                                  │
                   ┌──────────────┼──────────────┐
@@ -156,7 +156,7 @@ repo-root/
 ├─ README.md  (this file)
 ├─ DECISIONS.md                       why every choice
 ├─ ARCHITECTURE.md                    request lifecycles + auth flows
-├─ DEPLOY.md                          Render + Vercel walkthrough
+├─ DEPLOY.md                          Render walkthrough (frontend + backend)
 ├─ R2_SETUP.md                        Cloudflare R2 in 8 steps
 └─ STUDY.md                           map of design patterns + reading roadmap
 ```
