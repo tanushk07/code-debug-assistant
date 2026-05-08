@@ -2,8 +2,9 @@ import ReactMarkdown from 'react-markdown'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 
 const blockStyle = {
-  background: '#fafafa',
-  border: '2px solid #000',
+  background: 'var(--cda-muted)',
+  border: '2px solid var(--cda-border)',
+  color: 'var(--cda-fg)',
   padding: '0.6rem 0.75rem',
   margin: 0,
   fontSize: '0.82rem',
@@ -52,7 +53,7 @@ const MD_COMPONENTS = { code: codeRenderer, p: paragraphRenderer }
 function ClassificationCard({ data }) {
   if (!data?.errors?.length) return null
   return (
-    <div className="border-2 border-black p-2 mb-3 bg-yellow-50">
+    <div className="border-2 border-black p-2 mb-3 bg-yellow-50" style={{ color: 'var(--cda-fg)' }}>
       <div className="pixel-label mb-1">DETECTED ERRORS ({data.errors.length})</div>
       <ul className="font-terminal text-base space-y-1">
         {data.errors.map((e, i) => (

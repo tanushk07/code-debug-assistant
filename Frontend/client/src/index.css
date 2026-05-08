@@ -265,4 +265,31 @@ img.pixelated {
 .dark .bg-red-200      { background-color: #5c0e0e !important; }
 .dark .text-red-700    { color: #fca5a5 !important; }
 
-/* Markdown inline code already maps via vars; nothing else needed here. */
+/* ---- Chat / Markdown in dark mode ---- */
+.dark .markdown-body,
+.dark .markdown-body * {
+  color: var(--cda-fg);
+}
+
+.dark .markdown-body code:not(pre code) {
+  background: var(--cda-muted2);
+  border-color: var(--cda-border);
+  color: var(--cda-fg);
+}
+
+/* Syntax-highlighted code blocks — force all tokens to readable color */
+.dark .markdown-body pre,
+.dark .markdown-body pre code,
+.dark .markdown-body pre span {
+  color: var(--cda-fg) !important;
+}
+
+/* Ensure the assistant bubble body text is visible */
+.dark .font-terminal {
+  color: var(--cda-fg);
+}
+
+.dark .md-p {
+  color: var(--cda-fg);
+}
+
