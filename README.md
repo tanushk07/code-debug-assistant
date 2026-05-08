@@ -111,6 +111,7 @@ See [DECISIONS.md](./DECISIONS.md) for why each choice.
 | GET / PATCH / DELETE | `/api/sessions/:id` | session detail |
 | POST | `/api/sessions/:id/messages` | streamed AI reply (SSE) |
 | POST | `/api/upload` | screenshot → R2 (or local) |
+| GET  | `/api/image-proxy?url=` | same-origin proxy for R2 images (annotation canvas CORS) |
 | GET / POST / DELETE | `/api/sessions/:id/share` | toggle read-only public share |
 | GET  | `/api/share/:token` | public snapshot of a shared session |
 | GET  | `/api/share/:token/stream` | public SSE stream of live events |

@@ -293,3 +293,37 @@ img.pixelated {
   color: var(--cda-fg);
 }
 
+/* ---- Session sidebar text in dark mode ----
+   Scoped to .cda-session-sidebar so these rules don't leak into other
+   <aside> elements (e.g. ChatPanel), which would bleach chat text. */
+.dark .cda-session-sidebar a,
+.dark .cda-session-sidebar span,
+.dark .cda-session-sidebar div,
+.dark .cda-session-sidebar button {
+  color: var(--cda-fg);
+}
+
+/* Active session: keep inverted colors readable */
+.dark .cda-session-sidebar a.bg-black {
+  background-color: var(--cda-accent) !important;
+  color: var(--cda-accent-fg) !important;
+}
+
+.dark .cda-session-sidebar a.bg-black div,
+.dark .cda-session-sidebar a.bg-black button {
+  color: var(--cda-accent-fg) !important;
+}
+
+/* Inverted surfaces (e.g. user message bubble) — force readable text
+   even when children carry .font-terminal / .font-mono / .font-pixel,
+   which the global dark-mode rules push to var(--cda-fg). */
+.dark .bg-black {
+  color: var(--cda-accent-fg);
+}
+.dark .bg-black .font-terminal,
+.dark .bg-black .font-mono,
+.dark .bg-black .font-pixel,
+.dark .bg-black .markdown-body,
+.dark .bg-black .markdown-body * {
+  color: var(--cda-accent-fg) !important;
+}

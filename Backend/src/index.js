@@ -10,6 +10,7 @@ const authRouter = require('./routes/auth');
 const meRouter = require('./routes/me');
 const sessionsRouter = require('./routes/sessions');
 const uploadRouter = require('./routes/upload');
+const imageProxyRouter = require('./routes/image-proxy');
 const configRouter = require('./routes/config');
 const shareRouter = require('./routes/share');
 const errorMiddleware = require('./middleware/error');
@@ -51,6 +52,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/me', meRouter);
 app.use('/api/sessions', sessionsRouter);
 app.use('/api/upload', uploadRouter);
+app.use('/api/image-proxy', imageProxyRouter);
 app.use('/api/config', configRouter);
 app.use('/api/share', shareRouter); // public — no auth
 

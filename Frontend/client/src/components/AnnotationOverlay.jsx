@@ -16,29 +16,38 @@ const STROKE_COLOR = '#dc2626'
 const STROKE_WIDTH = 4
 
 export default function AnnotationOverlay({ imageUrl, onSave, onClose }) {
-  const [img, setImg]             = useState(null)
-  const [scale, setScale]         = useState(1)
-  const [strokes, setStrokes]     = useState([])    // [{ points: [x1,y1,x2,y2,...] }]
+  const [img, setImg] = useState(null)
+  const [scale, setScale] = useState(1)
+  const [strokes, setStrokes] = useState([])    // [{ points: [x1,y1,x2,y2,...] }]
   const [redoStack, setRedoStack] = useState([])
-  const [drawing, setDrawing]     = useState(false)
-  const [saving, setSaving]       = useState(false)
-  const [err, setErr]             = useState(null)
+  const [drawing, setDrawing] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [err, setErr] = useState(null)
   const stageRef = useRef()
 
-  // Load the image into an HTMLImageElement.
+  // Route remote (e.g. R2) URLs through our backend proxy so the bytes
+  // arrive same-origin. Without this, pub-*.r2.dev has no CORS headers,
+  // so crossOrigin='anonymous' fails to load AND loading without it
+  // taints the canvas, breaking toDataURL() on save.
+  function loadableUrl(url) {
+    const apiBase = import.meta.env.VITE_API_URL || window.location.origin
+    if (url.startsWith(apiBase + '/')) return url
+    return `${apiBase}/api/image-proxy?url=${encodeURIComponent(url)}`
+  }
+
   useEffect(() => {
     const i = new window.Image()
     i.crossOrigin = 'anonymous'
-    i.src = imageUrl
-    i.onload  = () => setImg(i)
-    i.onerror = () => setErr('Could not load image (maybe a CORS issue)')
+    i.onload = () => setImg(i)
+    i.onerror = () => setErr('Could not load image')
+    i.src = loadableUrl(imageUrl)
   }, [imageUrl])
 
   // Scale image to fit the viewport whenever the image OR window resizes.
   useEffect(() => {
     if (!img) return
     const fit = () => {
-      const maxW = window.innerWidth  - 80
+      const maxW = window.innerWidth - 80
       const maxH = window.innerHeight - 200
       setScale(Math.min(1, maxW / img.width, maxH / img.height))
     }
@@ -107,10 +116,16 @@ export default function AnnotationOverlay({ imageUrl, onSave, onClose }) {
         pixelRatio: 1 / scale,
         mimeType: 'image/png',
       })
-      const blob = await (await fetch(dataURL)).blob()
+      // Convert data URL → Blob with an explicit MIME type.
+      // Without the type, some browsers send 'application/octet-stream'
+      // in the multipart header, which fails multer's fileFilter.
+      const res = await fetch(dataURL)
+      const rawBlob = await res.blob()
+      const typedBlob = new Blob([rawBlob], { type: 'image/png' })
+      const file = new File([typedBlob], 'annotated.png', { type: 'image/png' })
 
       const fd = new FormData()
-      fd.append('image', blob, 'annotated.png')
+      fd.append('image', file)
       const BASE = import.meta.env.VITE_API_URL || ''
       const r = await fetch(`${BASE}/api/upload`, {
         method: 'POST',
@@ -119,7 +134,7 @@ export default function AnnotationOverlay({ imageUrl, onSave, onClose }) {
       })
       if (!r.ok) {
         let msg = r.statusText
-        try { msg = (await r.json()).error || msg } catch {}
+        try { msg = (await r.json()).error || msg } catch { }
         throw new Error(msg)
       }
       const { url } = await r.json()
@@ -145,7 +160,10 @@ export default function AnnotationOverlay({ imageUrl, onSave, onClose }) {
         </span>
         <button
           onClick={onClose}
-          className="ml-auto font-pixel text-[10px] px-3 py-1 border-2 border-white text-white hover:bg-white hover:text-black"
+          className="ml-auto font-pixel text-[10px] px-3 py-1"
+          style={{ border: '2px solid #fff', color: '#fff', background: 'transparent' }}
+          onMouseEnter={(e) => { e.target.style.background = '#fff'; e.target.style.color = '#000' }}
+          onMouseLeave={(e) => { e.target.style.background = 'transparent'; e.target.style.color = '#fff' }}
           aria-label="Close"
         >
           CLOSE
@@ -199,11 +217,12 @@ export default function AnnotationOverlay({ imageUrl, onSave, onClose }) {
       </div>
 
       {/* Footer toolbar */}
-      <footer className="border-t-2 border-white/40 p-3 flex items-center gap-2 justify-center bg-black">
+      <footer className="border-t-2 p-3 flex items-center gap-2 justify-center" style={{ borderColor: 'rgba(255,255,255,0.4)', background: '#000' }}>
         <button
           onClick={undo}
           disabled={!strokes.length || saving}
-          className="font-pixel text-[10px] px-3 py-2 bg-white text-black border-2 border-white hover:bg-black hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
+          className="font-pixel text-[10px] px-3 py-2 disabled:opacity-40 disabled:cursor-not-allowed"
+          style={{ background: '#fff', color: '#000', border: '2px solid #fff' }}
           title="Undo (Ctrl+Z)"
         >
           ↶ UNDO
@@ -211,7 +230,8 @@ export default function AnnotationOverlay({ imageUrl, onSave, onClose }) {
         <button
           onClick={redo}
           disabled={!redoStack.length || saving}
-          className="font-pixel text-[10px] px-3 py-2 bg-white text-black border-2 border-white hover:bg-black hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
+          className="font-pixel text-[10px] px-3 py-2 disabled:opacity-40 disabled:cursor-not-allowed"
+          style={{ background: '#fff', color: '#000', border: '2px solid #fff' }}
           title="Redo (Ctrl+Shift+Z)"
         >
           ↷ REDO
@@ -219,17 +239,19 @@ export default function AnnotationOverlay({ imageUrl, onSave, onClose }) {
         <button
           onClick={clearAll}
           disabled={!strokes.length || saving}
-          className="font-pixel text-[10px] px-3 py-2 bg-white text-black border-2 border-white hover:bg-black hover:text-white disabled:opacity-40"
+          className="font-pixel text-[10px] px-3 py-2 disabled:opacity-40"
+          style={{ background: '#fff', color: '#000', border: '2px solid #fff' }}
         >
           CLEAR
         </button>
-        <span className="font-pixel text-[10px] text-white/60 mx-3">
+        <span className="font-pixel text-[10px] mx-3" style={{ color: 'rgba(255,255,255,0.6)' }}>
           {strokes.length} stroke{strokes.length === 1 ? '' : 's'}
         </span>
         <button
           onClick={save}
           disabled={saving || !img}
-          className="font-pixel text-[10px] px-4 py-2 bg-red-600 text-white border-2 border-red-600 hover:bg-white hover:text-red-600 disabled:opacity-50 ml-auto"
+          className="font-pixel text-[10px] px-4 py-2 disabled:opacity-50 ml-auto"
+          style={{ background: '#dc2626', color: '#fff', border: '2px solid #dc2626' }}
         >
           {saving ? 'SAVING…' : 'SAVE'}
         </button>

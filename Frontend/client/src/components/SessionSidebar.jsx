@@ -7,7 +7,7 @@ export default function SessionSidebar({ activeId, refreshKey, onCollapse }) {
   const navigate = useNavigate()
 
   useEffect(() => {
-    api('/api/sessions').then(setSessions).catch(() => {})
+    api('/api/sessions').then(setSessions).catch(() => { })
   }, [refreshKey])
 
   async function newSession() {
@@ -15,7 +15,7 @@ export default function SessionSidebar({ activeId, refreshKey, onCollapse }) {
       const { id } = await api('/api/sessions', { method: 'POST' })
       setSessions((s) => [{ id, title: 'Untitled session', updated_at: new Date() }, ...s])
       navigate(`/chat/${id}`)
-    } catch {}
+    } catch { }
   }
 
   async function deleteSession(id, e) {
@@ -26,11 +26,11 @@ export default function SessionSidebar({ activeId, refreshKey, onCollapse }) {
       await api(`/api/sessions/${id}`, { method: 'DELETE' })
       setSessions((s) => s.filter((x) => x.id !== id))
       if (String(id) === String(activeId)) navigate('/chat')
-    } catch {}
+    } catch { }
   }
 
   return (
-    <aside className="bg-white flex flex-col h-full">
+    <aside className="cda-session-sidebar bg-white flex flex-col h-full">
       <div className="px-3 py-3 border-b-2 border-black flex items-center gap-2 h-12">
         <span className="pixel-label flex-1">SESSIONS</span>
         {onCollapse && (
