@@ -230,11 +230,23 @@ img.pixelated {
 }
 
 /* =====================================================================
-   DARK MODE — re-skin Tailwind utilities and tinted accents.
-   The component primitives above use @apply'd utilities, so flipping
-   bg-white / bg-black / border-black / text-black / text-white globally
-   here cascades into pixel-btn, pixel-card, pixel-input as well.
+   DARK MODE
+   =====================================================================
+   Two categories of override:
+
+   A) Tailwind UTILITY classes on elements in JSX — targeted by class
+      name selector, e.g. ".dark .bg-white { … }". These work because
+      the element actually carries the utility class in the DOM.
+
+   B) @layer components classes (pixel-btn, pixel-card, pixel-input) —
+      @apply copies CSS *properties* into the component class but does
+      NOT add the utility class names to the DOM element. So
+      ".dark .bg-white" NEVER matches a pixel-btn-primary button even
+      though @apply bg-black was used to build it. These need their own
+      explicit .dark .pixel-* rules below.
    ===================================================================== */
+
+/* A) Utility overrides ------------------------------------------------ */
 .dark .bg-white                { background-color: var(--cda-bg) !important; }
 .dark .bg-gray-50              { background-color: var(--cda-muted) !important; }
 .dark .bg-gray-100             { background-color: var(--cda-muted2) !important; }
@@ -246,30 +258,87 @@ img.pixelated {
 .dark .bg-black\/40            { background-color: var(--cda-overlay) !important; }
 .dark .bg-white\/50            { background-color: rgba(13, 13, 13, 0.6) !important; }
 
-/* Hover variants — keep the inversion behavior */
+/* Hover utilities */
 .dark .hover\:bg-black:hover        { background-color: var(--cda-accent) !important; }
 .dark .hover\:bg-white:hover        { background-color: var(--cda-bg) !important; }
 .dark .hover\:bg-gray-100:hover     { background-color: var(--cda-muted2) !important; }
 .dark .hover\:text-black:hover      { color: var(--cda-fg) !important; }
 .dark .hover\:text-white:hover      { color: var(--cda-accent-fg) !important; }
-.dark .disabled\:hover\:bg-white:disabled:hover { background-color: var(--cda-bg) !important; }
-.dark .disabled\:hover\:text-black:disabled:hover { color: var(--cda-fg) !important; }
+.dark .disabled\:hover\:bg-white:disabled:hover    { background-color: var(--cda-bg) !important; }
+.dark .disabled\:hover\:text-black:disabled:hover  { color: var(--cda-fg) !important; }
 
-/* Pixel shadows */
+/* Shadows */
 .dark .shadow-pixel    { box-shadow: 4px 4px 0 0 var(--cda-shadow) !important; }
 .dark .shadow-pixel-sm { box-shadow: 2px 2px 0 0 var(--cda-shadow) !important; }
 
-/* Tinted accents — keep readable on dark surfaces */
-.dark .bg-yellow-50    { background-color: var(--cda-tint-yellow) !important; color: var(--cda-fg); }
-.dark .bg-yellow-200   { background-color: #5c4d00 !important; }
-.dark .bg-red-200      { background-color: #5c0e0e !important; }
-.dark .text-red-700    { color: #fca5a5 !important; }
+/* Tinted accents */
+.dark .bg-yellow-50  { background-color: var(--cda-tint-yellow) !important; color: var(--cda-fg); }
+.dark .bg-yellow-200 { background-color: #5c4d00 !important; }
+.dark .bg-red-200    { background-color: #5c0e0e !important; }
+.dark .text-red-700  { color: #fca5a5 !important; }
 
-/* ---- Chat / Markdown in dark mode ---- */
-.dark .markdown-body,
-.dark .markdown-body * {
+/* Inverted surfaces (.bg-black becomes light in dark mode) — children
+   that carry font-* or markdown styles would otherwise get cda-fg (light)
+   applied and become unreadable on a now-light background. */
+.dark .bg-black { color: var(--cda-accent-fg); }
+.dark .bg-black .font-terminal,
+.dark .bg-black .font-mono,
+.dark .bg-black .font-pixel,
+.dark .bg-black .markdown-body,
+.dark .bg-black .markdown-body * { color: var(--cda-accent-fg) !important; }
+
+/* B) Component primitive overrides ------------------------------------ */
+
+/* pixel-btn: light mode = white bg / black text; dark = invert */
+.dark .pixel-btn {
+  background-color: var(--cda-bg);
+  color: var(--cda-fg);
+  border-color: var(--cda-border);
+  box-shadow: 2px 2px 0 0 var(--cda-shadow);
+}
+.dark .pixel-btn:hover:not(:disabled) {
+  background-color: var(--cda-accent);
+  color: var(--cda-accent-fg);
+}
+.dark .pixel-btn:disabled:hover {
+  background-color: var(--cda-bg);
   color: var(--cda-fg);
 }
+
+/* pixel-btn-primary: light mode = black bg / white text; dark = invert */
+.dark .pixel-btn-primary {
+  background-color: var(--cda-accent);
+  color: var(--cda-accent-fg);
+  border-color: var(--cda-border);
+  box-shadow: 2px 2px 0 0 var(--cda-shadow);
+}
+.dark .pixel-btn-primary:hover:not(:disabled) {
+  background-color: var(--cda-bg);
+  color: var(--cda-fg);
+}
+.dark .pixel-btn-primary:disabled:hover {
+  background-color: var(--cda-accent);
+  color: var(--cda-accent-fg);
+}
+
+/* pixel-input */
+.dark .pixel-input {
+  background-color: var(--cda-bg);
+  color: var(--cda-fg);
+  border-color: var(--cda-border);
+}
+.dark .pixel-input::placeholder { opacity: 0.4; }
+
+/* pixel-card */
+.dark .pixel-card {
+  background-color: var(--cda-bg);
+  border-color: var(--cda-border);
+  box-shadow: 4px 4px 0 0 var(--cda-shadow);
+}
+
+/* ---- Chat / Markdown ---- */
+.dark .markdown-body,
+.dark .markdown-body * { color: var(--cda-fg); }
 
 .dark .markdown-body code:not(pre code) {
   background: var(--cda-muted2);
@@ -277,53 +346,9 @@ img.pixelated {
   color: var(--cda-fg);
 }
 
-/* Syntax-highlighted code blocks — force all tokens to readable color */
 .dark .markdown-body pre,
 .dark .markdown-body pre code,
-.dark .markdown-body pre span {
-  color: var(--cda-fg) !important;
-}
+.dark .markdown-body pre span { color: var(--cda-fg) !important; }
 
-/* Ensure the assistant bubble body text is visible */
-.dark .font-terminal {
-  color: var(--cda-fg);
-}
-
-.dark .md-p {
-  color: var(--cda-fg);
-}
-
-/* ---- Session sidebar text in dark mode ----
-   Scoped to .cda-session-sidebar so these rules don't leak into other
-   <aside> elements (e.g. ChatPanel), which would bleach chat text. */
-.dark .cda-session-sidebar a,
-.dark .cda-session-sidebar span,
-.dark .cda-session-sidebar div,
-.dark .cda-session-sidebar button {
-  color: var(--cda-fg);
-}
-
-/* Active session: keep inverted colors readable */
-.dark .cda-session-sidebar a.bg-black {
-  background-color: var(--cda-accent) !important;
-  color: var(--cda-accent-fg) !important;
-}
-
-.dark .cda-session-sidebar a.bg-black div,
-.dark .cda-session-sidebar a.bg-black button {
-  color: var(--cda-accent-fg) !important;
-}
-
-/* Inverted surfaces (e.g. user message bubble) — force readable text
-   even when children carry .font-terminal / .font-mono / .font-pixel,
-   which the global dark-mode rules push to var(--cda-fg). */
-.dark .bg-black {
-  color: var(--cda-accent-fg);
-}
-.dark .bg-black .font-terminal,
-.dark .bg-black .font-mono,
-.dark .bg-black .font-pixel,
-.dark .bg-black .markdown-body,
-.dark .bg-black .markdown-body * {
-  color: var(--cda-accent-fg) !important;
-}
+.dark .font-terminal { color: var(--cda-fg); }
+.dark .md-p          { color: var(--cda-fg); }
