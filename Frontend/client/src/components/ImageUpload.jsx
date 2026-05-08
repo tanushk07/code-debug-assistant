@@ -14,6 +14,27 @@ import AnnotationOverlay from './AnnotationOverlay.jsx'
 
 const MAX_IMAGES = 8
 const MAX_SIZE   = 5 * 1024 * 1024  // 5 MB per file
+const ALLOWED_MIME = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif'])
+const ALLOWED_EXT  = new Set(['png', 'jpg', 'jpeg', 'webp', 'gif'])
+
+function shortName(name, max = 22) {
+  if (name.length <= max) return name
+  return name.slice(0, max - 3) + '…'
+}
+
+function validateImage(f) {
+  const ext = (f.name.split('.').pop() || '').toLowerCase()
+  // Trust MIME first; some OSes can send blank type for unusual files.
+  const mimeOk = ALLOWED_MIME.has(f.type)
+  const extOk  = ALLOWED_EXT.has(ext)
+  if (!mimeOk && !extOk) {
+    return `${shortName(f.name)}: not a supported image (PNG/JPEG/WEBP/GIF only)`
+  }
+  if (f.size > MAX_SIZE) {
+    return `${shortName(f.name)}: over 5 MB`
+  }
+  return null
+}
 
 export default function ImageUpload({ value, onChange }) {
   const images = Array.isArray(value) ? value : []
@@ -25,7 +46,6 @@ export default function ImageUpload({ value, onChange }) {
   const dragDepth = useRef(0)
 
   async function uploadFile(file) {
-    if (file.size > MAX_SIZE) throw new Error('File too big (5 MB max)')
     const fd = new FormData()
     fd.append('image', file)
     const BASE = import.meta.env.VITE_API_URL || ''
@@ -43,15 +63,30 @@ export default function ImageUpload({ value, onChange }) {
   }
 
   async function ingest(fileList) {
-    const files = Array.from(fileList || []).filter((f) => f.type.startsWith('image/'))
-    if (!files.length) return
-    setErr(null); setUploading(true)
+    const all = Array.from(fileList || [])
+    if (!all.length) return
+    const errors = []
+    const valid  = []
+    for (const f of all) {
+      const reason = validateImage(f)
+      if (reason) errors.push(reason)
+      else valid.push(f)
+    }
+
+    const room = MAX_IMAGES - images.length
+    const accepted = valid.slice(0, room)
+    if (valid.length > accepted.length) {
+      errors.push(`Only ${room} more screenshot${room === 1 ? '' : 's'} allowed (max ${MAX_IMAGES})`)
+    }
+
+    setErr(errors.length ? errors.slice(0, 2).join(' · ') + (errors.length > 2 ? ` · +${errors.length - 2} more` : '') : null)
+    if (!accepted.length) {
+      if (fileRef.current) fileRef.current.value = ''
+      return
+    }
+
+    setUploading(true)
     try {
-      const room = MAX_IMAGES - images.length
-      const accepted = files.slice(0, room)
-      if (files.length > accepted.length) {
-        setErr(`Only ${room} more screenshot${room === 1 ? '' : 's'} allowed (max ${MAX_IMAGES})`)
-      }
       const urls = []
       for (const f of accepted) urls.push({ url: await uploadFile(f) })
       onChange([...images, ...urls])
@@ -139,7 +174,7 @@ export default function ImageUpload({ value, onChange }) {
             <input
               ref={fileRef}
               type="file"
-              accept="image/*"
+              accept="image/png,image/jpeg,image/webp,image/gif"
               multiple
               onChange={handleFiles}
               className="sr-only"
