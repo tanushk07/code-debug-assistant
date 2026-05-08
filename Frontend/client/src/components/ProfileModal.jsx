@@ -79,7 +79,13 @@ export default function ProfileModal({ onClose }) {
               />
             </div>
             {avatar && (
-              <img src={avatar} alt="avatar" className="w-16 h-16 border-2 border-black object-cover" />
+              <img
+                src={avatar}
+                alt="avatar preview"
+                referrerPolicy="no-referrer"
+                className="w-16 h-16 border-2 border-black object-cover"
+                onError={(e) => { e.currentTarget.style.display = 'none' }}
+              />
             )}
             {msg && <p className="font-terminal text-lg">[ {msg} ]</p>}
 
