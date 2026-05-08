@@ -146,7 +146,8 @@ repo-root/
 │  │  │                               Profile, SharePage (public read-only)
 │  │  ├─ components/                  SessionSidebar, CodeEditor, ErrorLog,
 │  │  │                               ImageUpload, AnnotationOverlay, ChatPanel,
-│  │  │                               MessageBubble, ShareButton, DesktopGate
+│  │  │                               MessageBubble, ShareButton, ThemeToggle,
+│  │  │                               DesktopGate
 │  │  ├─ hooks/                       useSession, useStreamingChat
 │  │  └─ lib/                         api, auth, config
 │  ├─ Dockerfile + nginx.conf         prod image with SPA fallback + /api proxy

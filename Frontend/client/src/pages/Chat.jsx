@@ -7,6 +7,7 @@ import ImageUpload from '../components/ImageUpload.jsx'
 import ChatPanel from '../components/ChatPanel.jsx'
 import ProfileModal from '../components/ProfileModal.jsx'
 import ShareButton from '../components/ShareButton.jsx'
+import ThemeToggle from '../components/ThemeToggle.jsx'
 import { useSession } from '../hooks/useSession.js'
 import { api } from '../lib/api.js'
 import { clearToken } from '../lib/auth.js'
@@ -21,11 +22,17 @@ export default function Chat() {
   const [sidebarW, setSidebarW] = useState(() => parseInt(localStorage.getItem('cda.sidebarW')) || 288)
   const [chatW, setChatW] = useState(() => parseInt(localStorage.getItem('cda.chatW')) || 384)
   const [errorH, setErrorH] = useState(() => parseInt(localStorage.getItem('cda.errorH')) || 160)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(
+    () => localStorage.getItem('cda.sidebarCollapsed') === '1',
+  )
   const dragging = useRef(null)
 
   useEffect(() => { localStorage.setItem('cda.sidebarW', sidebarW) }, [sidebarW])
   useEffect(() => { localStorage.setItem('cda.chatW', chatW) }, [chatW])
   useEffect(() => { localStorage.setItem('cda.errorH', errorH) }, [errorH])
+  useEffect(() => {
+    localStorage.setItem('cda.sidebarCollapsed', sidebarCollapsed ? '1' : '0')
+  }, [sidebarCollapsed])
 
   // Global mousemove / mouseup for drag-resize
   useEffect(() => {
@@ -104,18 +111,36 @@ export default function Chat() {
       )}
 
       {/* ---- Sidebar ---- */}
-      <div style={{ width: sidebarW }} className="flex-shrink-0 h-full overflow-hidden">
-        <SessionSidebar activeId={sessionId} refreshKey={messages.length} />
-      </div>
+      {!sidebarCollapsed && (
+        <>
+          <div style={{ width: sidebarW }} className="flex-shrink-0 h-full overflow-hidden">
+            <SessionSidebar
+              activeId={sessionId}
+              refreshKey={messages.length}
+              onCollapse={() => setSidebarCollapsed(true)}
+            />
+          </div>
 
-      <div
-        className="resize-handle-h"
-        onMouseDown={(e) => startDrag('sidebar', sidebarW, e)}
-      />
+          <div
+            className="resize-handle-h"
+            onMouseDown={(e) => startDrag('sidebar', sidebarW, e)}
+          />
+        </>
+      )}
 
       {/* ---- Middle: Code + Error + Image ---- */}
       <div className="flex-1 flex flex-col min-h-0 min-w-0 overflow-hidden">
         <header className="border-b-2 border-black h-9 flex items-center px-3 bg-gray-50 gap-3 flex-shrink-0">
+          {sidebarCollapsed && (
+            <button
+              onClick={() => setSidebarCollapsed(false)}
+              className="pixel-label hover:underline"
+              title="Open sidebar"
+              aria-label="Open sidebar"
+            >
+              »
+            </button>
+          )}
           <input
             value={session?.title || ''}
             onChange={(e) => save({ title: e.target.value })}
@@ -123,6 +148,7 @@ export default function Chat() {
             className="font-pixel text-[10px] uppercase tracking-wider bg-transparent outline-none flex-1 placeholder:opacity-40"
           />
           <ShareButton sessionId={sessionId} />
+          <ThemeToggle />
           <button onClick={() => setShowProfile(true)} className="pixel-label hover:underline">PROFILE</button>
           <button onClick={logout} className="pixel-label hover:underline">LOGOUT</button>
         </header>

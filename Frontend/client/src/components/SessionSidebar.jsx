@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../lib/api.js'
 
-export default function SessionSidebar({ activeId, refreshKey }) {
+export default function SessionSidebar({ activeId, refreshKey, onCollapse }) {
   const [sessions, setSessions] = useState([])
   const navigate = useNavigate()
 
@@ -31,8 +31,18 @@ export default function SessionSidebar({ activeId, refreshKey }) {
 
   return (
     <aside className="bg-white flex flex-col h-full">
-      <div className="px-3 py-3 border-b-2 border-black flex items-center gap-2">
+      <div className="px-3 py-3 border-b-2 border-black flex items-center gap-2 h-12">
         <span className="pixel-label flex-1">SESSIONS</span>
+        {onCollapse && (
+          <button
+            onClick={onCollapse}
+            className="pixel-label px-1 hover:underline"
+            title="Collapse sidebar"
+            aria-label="Collapse sidebar"
+          >
+            «
+          </button>
+        )}
       </div>
 
       <div className="px-3 pt-3 pb-2">

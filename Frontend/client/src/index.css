@@ -2,6 +2,39 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ---- Theme tokens ---- */
+:root {
+  --cda-bg: #ffffff;
+  --cda-fg: #0a0a0a;
+  --cda-muted: #fafafa;     /* gray-50 */
+  --cda-muted2: #f5f5f5;    /* code chip */
+  --cda-muted3: #f3f4f6;    /* gray-100 */
+  --cda-border: #000000;
+  --cda-shadow: #000000;
+  --cda-accent: #000000;     /* "primary" surface that inverts */
+  --cda-accent-fg: #ffffff;
+  --cda-handle: #e5e7eb;
+  --cda-scroll-track: #fafafa;
+  --cda-overlay: rgba(0, 0, 0, 0.4);
+  --cda-tint-yellow: #fffbeb;
+}
+
+.dark {
+  --cda-bg: #0d0d0d;
+  --cda-fg: #f4f4f4;
+  --cda-muted: #1a1a1a;
+  --cda-muted2: #232323;
+  --cda-muted3: #2a2a2a;
+  --cda-border: #f4f4f4;
+  --cda-shadow: #f4f4f4;
+  --cda-accent: #f4f4f4;
+  --cda-accent-fg: #0d0d0d;
+  --cda-handle: #333333;
+  --cda-scroll-track: #1a1a1a;
+  --cda-overlay: rgba(0, 0, 0, 0.6);
+  --cda-tint-yellow: #2a2400;
+}
+
 html,
 body,
 #root {
@@ -12,13 +45,12 @@ body,
 body {
   font-family: 'VT323', monospace;
   font-size: 18px;
-  background: #ffffff;
-  color: #0a0a0a;
+  background: var(--cda-bg);
+  color: var(--cda-fg);
   -webkit-font-smoothing: none;
   font-smooth: never;
 }
 
-/* Crisp scaling for any retro images */
 img.pixelated {
   image-rendering: pixelated;
 }
@@ -107,21 +139,21 @@ img.pixelated {
 }
 
 .markdown-body a {
-  color: #000;
+  color: var(--cda-fg);
   text-decoration: underline;
 }
 
 .markdown-body blockquote {
-  border-left: 3px solid #000;
+  border-left: 3px solid var(--cda-border);
   padding-left: 0.75em;
   margin: 0.5em 0;
   opacity: 0.8;
 }
 
 .markdown-body code:not(pre code) {
-  background: #f5f5f5;
+  background: var(--cda-muted2);
   padding: 0 4px;
-  border: 1px solid rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--cda-border);
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.9rem;
   word-break: break-all;
@@ -140,7 +172,7 @@ img.pixelated {
 
 .markdown-body th,
 .markdown-body td {
-  border: 1px solid #000;
+  border: 1px solid var(--cda-border);
   padding: 4px 8px;
 }
 
@@ -150,14 +182,14 @@ img.pixelated {
   flex-shrink: 0;
   cursor: col-resize;
   background: transparent;
-  border-left: 2px solid #000;
+  border-left: 2px solid var(--cda-border);
   transition: background 0.15s;
   z-index: 10;
 }
 
 .resize-handle-h:hover,
 .resize-handle-h:active {
-  background: #e5e7eb;
+  background: var(--cda-handle);
 }
 
 .resize-handle-v {
@@ -165,27 +197,72 @@ img.pixelated {
   flex-shrink: 0;
   cursor: row-resize;
   background: transparent;
-  border-top: 2px solid #000;
+  border-top: 2px solid var(--cda-border);
   transition: background 0.15s;
   z-index: 10;
 }
 
 .resize-handle-v:hover,
 .resize-handle-v:active {
-  background: #e5e7eb;
+  background: var(--cda-handle);
 }
 
-/* ---- Webkit scrollbar (subtle, monochrome) ---- */
+/* ---- Scrollbar ---- */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #fafafa;
+  background: var(--cda-scroll-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #000;
-  border: 2px solid #fafafa;
+  background: var(--cda-border);
+  border: 2px solid var(--cda-scroll-track);
 }
+
+/* ---- Drag-n-drop overlay shared visual ---- */
+.cda-drop-active {
+  outline: 3px dashed var(--cda-border);
+  outline-offset: -6px;
+  background: var(--cda-muted);
+}
+
+/* =====================================================================
+   DARK MODE — re-skin Tailwind utilities and tinted accents.
+   The component primitives above use @apply'd utilities, so flipping
+   bg-white / bg-black / border-black / text-black / text-white globally
+   here cascades into pixel-btn, pixel-card, pixel-input as well.
+   ===================================================================== */
+.dark .bg-white                { background-color: var(--cda-bg) !important; }
+.dark .bg-gray-50              { background-color: var(--cda-muted) !important; }
+.dark .bg-gray-100             { background-color: var(--cda-muted2) !important; }
+.dark .text-black              { color: var(--cda-fg) !important; }
+.dark .text-white              { color: var(--cda-accent-fg) !important; }
+.dark .border-black            { border-color: var(--cda-border) !important; }
+.dark .border-black\/30        { border-color: rgba(244, 244, 244, 0.3) !important; }
+.dark .bg-black                { background-color: var(--cda-accent) !important; }
+.dark .bg-black\/40            { background-color: var(--cda-overlay) !important; }
+.dark .bg-white\/50            { background-color: rgba(13, 13, 13, 0.6) !important; }
+
+/* Hover variants — keep the inversion behavior */
+.dark .hover\:bg-black:hover        { background-color: var(--cda-accent) !important; }
+.dark .hover\:bg-white:hover        { background-color: var(--cda-bg) !important; }
+.dark .hover\:bg-gray-100:hover     { background-color: var(--cda-muted2) !important; }
+.dark .hover\:text-black:hover      { color: var(--cda-fg) !important; }
+.dark .hover\:text-white:hover      { color: var(--cda-accent-fg) !important; }
+.dark .disabled\:hover\:bg-white:disabled:hover { background-color: var(--cda-bg) !important; }
+.dark .disabled\:hover\:text-black:disabled:hover { color: var(--cda-fg) !important; }
+
+/* Pixel shadows */
+.dark .shadow-pixel    { box-shadow: 4px 4px 0 0 var(--cda-shadow) !important; }
+.dark .shadow-pixel-sm { box-shadow: 2px 2px 0 0 var(--cda-shadow) !important; }
+
+/* Tinted accents — keep readable on dark surfaces */
+.dark .bg-yellow-50    { background-color: var(--cda-tint-yellow) !important; color: var(--cda-fg); }
+.dark .bg-yellow-200   { background-color: #5c4d00 !important; }
+.dark .bg-red-200      { background-color: #5c0e0e !important; }
+.dark .text-red-700    { color: #fca5a5 !important; }
+
+/* Markdown inline code already maps via vars; nothing else needed here. */

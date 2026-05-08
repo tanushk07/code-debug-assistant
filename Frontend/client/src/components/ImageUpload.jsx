@@ -20,7 +20,9 @@ export default function ImageUpload({ value, onChange }) {
   const [uploading, setUploading] = useState(false)
   const [err, setErr]             = useState(null)
   const [editIdx, setEditIdx]     = useState(null)  // index of image being annotated
+  const [dropping, setDropping]   = useState(false)
   const fileRef = useRef()
+  const dragDepth = useRef(0)
 
   async function uploadFile(file) {
     if (file.size > MAX_SIZE) throw new Error('File too big (5 MB max)')
@@ -40,8 +42,8 @@ export default function ImageUpload({ value, onChange }) {
     return (await r.json()).url
   }
 
-  async function handleFiles(e) {
-    const files = Array.from(e.target.files || [])
+  async function ingest(fileList) {
+    const files = Array.from(fileList || []).filter((f) => f.type.startsWith('image/'))
     if (!files.length) return
     setErr(null); setUploading(true)
     try {
@@ -61,6 +63,37 @@ export default function ImageUpload({ value, onChange }) {
     }
   }
 
+  function handleFiles(e) {
+    return ingest(e.target.files)
+  }
+
+  function onDragEnter(e) {
+    if (!e.dataTransfer?.types?.includes('Files')) return
+    e.preventDefault()
+    dragDepth.current += 1
+    setDropping(true)
+  }
+
+  function onDragLeave() {
+    dragDepth.current -= 1
+    if (dragDepth.current <= 0) {
+      dragDepth.current = 0
+      setDropping(false)
+    }
+  }
+
+  function onDragOver(e) {
+    if (e.dataTransfer?.types?.includes('Files')) e.preventDefault()
+  }
+
+  function onDrop(e) {
+    if (!e.dataTransfer?.files?.length) return
+    e.preventDefault()
+    dragDepth.current = 0
+    setDropping(false)
+    ingest(e.dataTransfer.files)
+  }
+
   function deleteImage(idx) {
     onChange(images.filter((_, i) => i !== idx))
   }
@@ -73,11 +106,18 @@ export default function ImageUpload({ value, onChange }) {
   const canAddMore = images.length < MAX_IMAGES
 
   return (
-    <div className="flex flex-col border-t-2 border-black flex-shrink-0">
+    <div
+      className={'flex flex-col border-t-2 border-black flex-shrink-0 relative ' + (dropping ? 'cda-drop-active' : '')}
+      onDragEnter={onDragEnter}
+      onDragLeave={onDragLeave}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+    >
       <div className="flex items-center bg-gray-50 border-b-2 border-black h-9 px-3 gap-3">
         <span className="pixel-label">SCREENSHOTS{images.length ? ` (${images.length})` : ''}</span>
         {uploading && <span className="pixel-label opacity-60">UPLOADING…</span>}
         {err && <span className="pixel-label text-red-700">[ {err} ]</span>}
+        <span className="pixel-label opacity-40 ml-auto hidden md:inline">DROP IMAGES HERE</span>
       </div>
 
       <div className="p-3 flex gap-2 overflow-x-auto">
