@@ -35,9 +35,9 @@ npm run dev
 ```
 
 Want to test it without typing any code? See
-[`examples/buggy-react-app/`](./examples/buggy-react-app) — 7 deliberate
-bugs across 3 files, ready to paste into the editor with a matching
-error log and a screenshot you can use.
+[`examples/buggy-taskflow/`](./examples/buggy-taskflow) — a deliberately
+buggy React task-management app ready to paste into the editor, complete
+with error logs and screenshots you can annotate.
 
 ---
 
@@ -62,7 +62,6 @@ error log and a screenshot you can use.
 ```
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md) for the full breakdown.
-See [DECISIONS.md](./DECISIONS.md) for why each choice.
 
 ### Two-agent pipeline
 
@@ -129,7 +128,7 @@ repo-root/
 │  │  ├─ index.js                    Express entry
 │  │  ├─ db.js                        pg Pool
 │  │  ├─ routes/                      auth, me, sessions, messages, upload,
-│  │  │                               config, share (public read-only)
+│  │  │                               image-proxy, config, share (public read-only)
 │  │  ├─ services/
 │  │  │  ├─ llm.js                    factory router for providers
 │  │  │  ├─ providers/                claude, openai, gemini, groq + index (auto-discover)
@@ -154,9 +153,8 @@ repo-root/
 │  ├─ Dockerfile + nginx.conf         prod image with SPA fallback + /api proxy
 │  └─ vite.config.js
 ├─ docker-compose.yml                 one-command local prod build
-├─ examples/buggy-react-app/          paste-in demo with 7 deliberate bugs
+├─ examples/buggy-taskflow/           paste-in demo app with deliberate bugs
 ├─ README.md  (this file)
-├─ DECISIONS.md                       why every choice
 ├─ ARCHITECTURE.md                    request lifecycles + auth flows
 ├─ DEPLOY.md                          Render walkthrough (frontend + backend)
 ├─ R2_SETUP.md                        Cloudflare R2 in 8 steps
@@ -171,7 +169,7 @@ repo-root/
   vector strokes. Means you can't un-annotate after save. Trade-off:
   the LLM gets a real image to look at.
 - **JWTs in localStorage** — XSS-readable; HttpOnly cookies would be
-  stronger. See [DECISIONS.md](./DECISIONS.md#why-jwt-in-localstorage-not-httponly-cookies).
+  stronger. Trade-off accepted for simplicity of this demo.
 - **Read-only live share, no two-way collab.** Click SHARE in the chat
   header to mint a public link; viewers see the conversation stream live
   but cannot send messages or edit code. Live events are pushed via an
@@ -182,9 +180,6 @@ repo-root/
   reach images (server is on `localhost`). Gemini sidesteps this by
   fetching the URL server-side. R2 fixes it for everyone — see
   [R2_SETUP.md](./R2_SETUP.md).
-
-Full rationale + the deliberate cuts list:
-[DECISIONS.md](./DECISIONS.md).
 
 ---
 
