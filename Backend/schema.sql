@@ -49,3 +49,15 @@ CREATE TABLE IF NOT EXISTS session_messages (
   created_at      TIMESTAMP DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_messages_session ON session_messages(session_id);
+
+-- Pending email verifications — stores OTP + signup payload until verified.
+CREATE TABLE IF NOT EXISTS pending_verifications (
+  id            SERIAL PRIMARY KEY,
+  email         VARCHAR NOT NULL,
+  code          VARCHAR(6) NOT NULL,
+  name          VARCHAR,
+  password_hash VARCHAR,
+  expires_at    TIMESTAMP NOT NULL,
+  created_at    TIMESTAMP DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_pv_email ON pending_verifications(email);
